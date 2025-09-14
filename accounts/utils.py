@@ -51,6 +51,44 @@ def send_email_notification(subject, template_name, context, recipient_email, fr
         logger.error(f"Failed to send email to {recipient_email}: {str(e)}")
         return False
 
+def send_new_employee_credentials_email(user, generated_password):
+    """
+    Send login credentials to newly created employee
+    """
+    subject = f"Your Account Credentials - {getattr(settings, 'COMPANY_NAME', 'Quorium Consulting')}"
+    template = 'emails/new_employee_credentials.html'
+    context = {
+        'user': user,
+        'generated_password': generated_password,
+        'login_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000')}/accounts/login/",
+    }
+    
+    return send_email_notification(
+        subject=subject,
+        template_name=template,
+        context=context,
+        recipient_email=user.email
+    )
+
+def send_password_change_required_email(user):
+    """
+    Send email requiring password change
+    """
+    subject = f"Password Change Required - {getattr(settings, 'COMPANY_NAME', 'Quorium Consulting')}"
+    template = 'emails/password_change_required.html'
+    context = {
+        'user': user,
+        'change_password_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000')}/accounts/change-password/",
+    }
+    
+    return send_email_notification(
+        subject=subject,
+        template_name=template,
+        context=context,
+        recipient_email=user.email
+    )
+
+# Keep all your existing email functions
 def send_leave_status_notification(leave_application, approver):
     """
     Send notification when leave status changes

@@ -19,24 +19,26 @@
             <div class="card-body">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
-                    <strong>Note:</strong> Only HR and Admin users can create new employee accounts. 
-                    All new employees will receive their login credentials and must change their password on first login.
+                    <strong>Note:</strong> Only HR and Admin users can create new employee accounts.
+                    All new employees will receive their login credentials and must change their password on first
+                    login.
                 </div>
-                
+
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
+
                     <div class="row">
                         <!-- Personal Information -->
                         <div class="col-md-6">
                             <h5 class="border-bottom pb-2 mb-3">
                                 <i class="fas fa-user me-2"></i>Personal Information
                             </h5>
-                            
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name
+                                            *</label>
                                         {{ form.first_name }}
                                         {% if form.first_name.errors %}
                                         <div class="invalid-feedback d-block">{{ form.first_name.errors }}</div>
@@ -45,7 +47,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name
+                                            *</label>
                                         {{ form.last_name }}
                                         {% if form.last_name.errors %}
                                         <div class="invalid-feedback d-block">{{ form.last_name.errors }}</div>
@@ -53,7 +56,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
                                 {{ form.email }}
@@ -61,7 +64,7 @@
                                 <div class="invalid-feedback d-block">{{ form.email.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
                                 {{ form.phone }}
@@ -69,26 +72,28 @@
                                 <div class="invalid-feedback d-block">{{ form.phone.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile
+                                    Picture</label>
                                 {{ form.profile_picture }}
                                 {% if form.profile_picture.errors %}
                                 <div class="invalid-feedback d-block">{{ form.profile_picture.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
-                        
+
                         <!-- Employment Information -->
                         <div class="col-md-6">
                             <h5 class="border-bottom pb-2 mb-3">
                                 <i class="fas fa-briefcase me-2"></i>Employment Information
                             </h5>
-                            
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="{{ form.username.id_for_label }}" class="form-label">Username *</label>
+                                        <label for="{{ form.username.id_for_label }}" class="form-label">Username
+                                            *</label>
                                         {{ form.username }}
                                         {% if form.username.errors %}
                                         <div class="invalid-feedback d-block">{{ form.username.errors }}</div>
@@ -98,7 +103,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="{{ form.employee_id.id_for_label }}" class="form-label">Employee ID</label>
+                                        <label for="{{ form.employee_id.id_for_label }}" class="form-label">Employee
+                                            ID</label>
                                         {{ form.employee_id }}
                                         {% if form.employee_id.errors %}
                                         <div class="invalid-feedback d-block">{{ form.employee_id.errors }}</div>
@@ -106,7 +112,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
                                 {{ form.department }}
@@ -114,7 +120,7 @@
                                 <div class="invalid-feedback d-block">{{ form.department.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="{{ form.role.id_for_label }}" class="form-label">Role *</label>
                                 {{ form.role }}
@@ -129,9 +135,10 @@
                                     </small>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="{{ form.manager.id_for_label }}" class="form-label">Reporting Manager</label>
+                                <label for="{{ form.manager.id_for_label }}" class="form-label">Reporting
+                                    Manager</label>
                                 {{ form.manager }}
                                 {% if form.manager.errors %}
                                 <div class="invalid-feedback d-block">{{ form.manager.errors }}</div>
@@ -139,7 +146,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Account Security -->
                     <div class="row mt-4">
                         <div class="col-12">
@@ -148,26 +155,45 @@
                             </h5>
                         </div>
                         <div class="col-md-6">
+                            <div class="form-check mb-3">
+                                {{ form.generate_password }}
+                                <label class="form-check-label" for="{{ form.generate_password.id_for_label }}">
+                                    Generate secure password automatically
+                                </label>
+                                {% if form.generate_password.errors %}
+                                <div class="invalid-feedback d-block">{{ form.generate_password.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Recommended: System will generate a secure password and email it
+                                    to the employee</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="manual-password-fields">
+                        <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="{{ form.password1.id_for_label }}" class="form-label">Temporary Password *</label>
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">Manual Password
+                                    (Optional)</label>
                                 {{ form.password1 }}
                                 {% if form.password1.errors %}
                                 <div class="invalid-feedback d-block">{{ form.password1.errors }}</div>
                                 {% endif %}
-                                <div class="form-text">Employee must change this on first login</div>
+                                <div class="form-text">{{ form.password1.help_text }}</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password *</label>
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Manual
+                                    Password</label>
                                 {{ form.password2 }}
                                 {% if form.password2.errors %}
                                 <div class="invalid-feedback d-block">{{ form.password2.errors }}</div>
                                 {% endif %}
+                                <div class="form-text">{{ form.password2.help_text }}</div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Account Status -->
                     <div class="row">
                         <div class="col-md-6">
@@ -182,14 +208,14 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Form Errors -->
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger">
                         {{ form.non_field_errors }}
                     </div>
                     {% endif %}
-                    
+
                     <!-- Action Buttons -->
                     <div class="d-flex gap-2 mt-4 pt-3 border-top">
                         <button type="submit" class="btn btn-success">
@@ -205,7 +231,7 @@
                 </form>
             </div>
         </div>
-        
+
         <!-- Help Card -->
         <div class="card mt-4">
             <div class="card-header">
@@ -246,22 +272,53 @@
 
 {% block extra_css %}
 <style>
-.form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
 
-.form-check-input:checked {
-    background-color: #667eea;
-    border-color: #667eea;
-}
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
 
-.card-header h6 {
-    color: #495057;
-}
+    .card-header h6 {
+        color: #495057;
+    }
 
-.border-bottom {
-    border-color: #e9ecef !important;
-}
+    .border-bottom {
+        border-color: #e9ecef !important;
+    }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generatePasswordCheckbox = document.getElementById('{{ form.generate_password.id_for_label }}');
+    const manualPasswordFields = document.getElementById('manual-password-fields');
+    const password1Field = document.getElementById('{{ form.password1.id_for_label }}');
+    const password2Field = document.getElementById('{{ form.password2.id_for_label }}');
+    
+    function togglePasswordFields() {
+        if (generatePasswordCheckbox.checked) {
+            manualPasswordFields.style.display = 'none';
+            password1Field.removeAttribute('required');
+            password2Field.removeAttribute('required');
+            password1Field.value = '';
+            password2Field.value = '';
+        } else {
+            manualPasswordFields.style.display = 'block';
+            password1Field.setAttribute('required', 'required');
+            password2Field.setAttribute('required', 'required');
+        }
+    }
+    
+    // Initial state
+    togglePasswordFields();
+    
+    // Toggle on checkbox change
+    generatePasswordCheckbox.addEventListener('change', togglePasswordFields);
+});
+</script>
 {% endblock %}

@@ -1,15 +1,18 @@
-# accounts/views.py - Updated with email integration
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from .forms import UserRegistrationForm, ProfileUpdateForm, AddUserForm
+from .forms import UserRegistrationForm, ProfileUpdateForm, AddUserForm, CustomPasswordChangeForm
 from .models import LeaveBalance
-from .utils import send_registration_welcome_email
+from .utils import (
+    send_registration_welcome_email, 
+    send_new_employee_credentials_email,
+    send_password_change_required_email
+)
 
 class RegisterView(SuccessMessageMixin, CreateView):
     form_class = UserRegistrationForm
@@ -57,20 +60,42 @@ def add_user_view(request):
         if form.is_valid():
             user = form.save()
             
-            # Send welcome email
-            try:
-                send_registration_welcome_email(user)
-                messages.success(
-                    request, 
-                    f'Employee account created for {user.get_full_name()}! '
-                    f'Welcome email sent to {user.email}. Username: {user.username}'
-                )
-            except Exception as e:
-                messages.warning(
-                    request,
-                    f'Employee account created for {user.get_full_name()} '
-                    f'(Username: {user.username}) but email failed: {str(e)}'
-                )
+            # Check if password was generated
+            generated_password = getattr(user, '_generated_password', None)
+            
+            if generated_password:
+                # Send credentials email with password change requirement
+                try:
+                    send_new_employee_credentials_email(user, generated_password)
+                    # Also send password change requirement
+                    send_password_change_required_email(user)
+                    messages.success(
+                        request, 
+                        f'Employee account created for {user.get_full_name()}! '
+                        f'Login credentials and password change instructions sent to {user.email}. Username: {user.username}'
+                    )
+                except Exception as e:
+                    messages.warning(
+                        request,
+                        f'Employee account created for {user.get_full_name()} '
+                        f'(Username: {user.username}, Password: {generated_password}) '
+                        f'but email failed: {str(e)}'
+                    )
+            else:
+                # Manual password was set
+                try:
+                    send_password_change_required_email(user)
+                    messages.success(
+                        request, 
+                        f'Employee account created for {user.get_full_name()}! '
+                        f'Password change notification sent to {user.email}. Username: {user.username}'
+                    )
+                except Exception as e:
+                    messages.warning(
+                        request,
+                        f'Employee account created for {user.get_full_name()} '
+                        f'(Username: {user.username}) but email failed: {str(e)}'
+                    )
             
             return redirect('dashboard:user_list')
         else:
@@ -79,3 +104,41 @@ def add_user_view(request):
         form = AddUserForm()
 
     return render(request, 'accounts/add_user.html', {'form': form})
+
+@login_required
+def change_password_view(request):
+    """View for users to change their password"""
+    print(f"Change password view accessed by: {request.user.username}")
+    print(f"Request method: {request.method}")
+    
+    if request.method == 'POST':
+        print("Processing POST request")
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        print(f"Form is valid: {form.is_valid()}")
+        if form.is_valid():
+            form.save()
+            # Update session to prevent logout
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Your password has been successfully changed!')
+            return redirect('accounts:profile')
+        else:
+            print(f"Form errors: {form.errors}")
+    else:
+        print("Creating GET form")
+        form = CustomPasswordChangeForm(request.user)
+    
+    print("Rendering template")
+    return render(request, 'accounts/change_password.html', {'form': form})
+    """View for users to change their password"""
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            # Update session to prevent logout
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Your password has been successfully changed!')
+            return redirect('accounts:profile')
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    
+    return render(request, 'accounts/change_password.html', {'form': form})

@@ -44,11 +44,11 @@ class Command(BaseCommand):
             
             # Deduct used days (this is a simplified approach)
             if 'annual leave' in usage:
-                balance.annual_leave = max(0, 21 - usage['annual leave'])
+                balance.annual_leave = max(0, 10 - usage['annual leave'])
             if 'sick leave' in usage:
-                balance.sick_leave = max(0, 10 - usage['sick leave'])
+                balance.sick_leave = max(0, 3 - usage['sick leave'])
             if 'casual leave' in usage:
-                balance.casual_leave = max(0, 7 - usage['casual leave'])
+                balance.casual_leave = max(0, 2 - usage['casual leave'])
             
             balance.save()
             self.stdout.write(f'Updated leave balance for {employee.username}')

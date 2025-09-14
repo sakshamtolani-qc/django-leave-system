@@ -113,14 +113,22 @@ def dashboard_home(request):
         })
         
         # Approval efficiency metrics
-        avg_approval_time = LeaveApplication.objects.filter(
-            status='approved',
-            admin_approved_at__isnull=False,
-            created_at__isnull=False
-        ).extra(
-            select={'approval_days': 'DATEDIFF(admin_approved_at, created_at)'}
-        ).aggregate(avg_days=Avg('approval_days'))
-        context['avg_approval_days'] = avg_approval_time['avg_days'] or 0
+        approved_applications = LeaveApplication.objects.filter(
+        status='approved',
+        admin_approved_at__isnull=False,
+        created_at__isnull=False
+        )
+
+        total_days = 0
+        count = 0
+        for app in approved_applications:
+            if app.admin_approved_at and app.created_at:
+                approval_days = (app.admin_approved_at.date() - app.created_at.date()).days
+                total_days += approval_days
+                count += 1
+
+        avg_approval_days = round(total_days / count, 1) if count > 0 else 0
+        context['avg_approval_days'] = avg_approval_days
         
         # Monthly approval trends
         monthly_stats = []
