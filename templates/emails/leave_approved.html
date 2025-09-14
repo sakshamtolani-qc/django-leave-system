@@ -1,0 +1,88 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Leave Application Approved{% endblock %}
+
+{% block header_subtitle %}Great News - Application Approved{% endblock %}
+
+{% block content %}
+<h2>Your Leave Application Has Been Approved!</h2>
+
+<p>Dear {{ leave.employee.first_name|default:leave.employee.username }},</p>
+
+{% if leave.status == 'approved' %}
+<p>Excellent news! Your leave application has been <strong>fully approved</strong> and you're all set for your time off.</p>
+
+<div class="info-box status-approved">
+    <strong>Status:</strong> Fully Approved - Ready to Go!<br>
+    <strong>Application ID:</strong> #{{ leave.id }}<br>
+    <strong>Approved By:</strong> {{ leave.admin_approved_by.get_full_name|default:leave.admin_approved_by.username }} ({{ leave.admin_approved_by.get_role_display }})<br>
+    <strong>Approval Date:</strong> {{ leave.admin_approved_at|date:"F d, Y \a\t g:i A" }}
+</div>
+{% else %}
+<p>Good news! Your leave application has been approved by {{ approver_role }} and is progressing through our approval process.</p>
+
+<div class="info-box status-pending">
+    <strong>Status:</strong> {{ leave.get_status_display }}<br>
+    <strong>Application ID:</strong> #{{ leave.id }}<br>
+    <strong>Approved By:</strong> {{ leave.hr_approved_by.get_full_name|default:leave.hr_approved_by.username }} (HR)<br>
+    <strong>Approval Date:</strong> {{ leave.hr_approved_at|date:"F d, Y \a\t g:i A" }}
+</div>
+{% endif %}
+
+<table class="details-table">
+    <tr>
+        <th>Leave Type</th>
+        <td>{{ leave.leave_type.name }}</td>
+    </tr>
+    <tr>
+        <th>Start Date</th>
+        <td>{{ leave.start_date|date:"F d, Y (l)" }}</td>
+    </tr>
+    <tr>
+        <th>End Date</th>
+        <td>{{ leave.end_date|date:"F d, Y (l)" }}</td>
+    </tr>
+    <tr>
+        <th>Total Days</th>
+        <td>{{ leave.days_requested }} day{{ leave.days_requested|pluralize }}</td>
+    </tr>
+    <tr>
+        <th>Return Date</th>
+        <td>{{ return_date|date:"F d, Y (l)" }}</td>
+    </tr>
+</table>
+
+{% if comments %}
+<div class="info-box">
+    <strong>Approver's Comments:</strong><br>
+    {{ comments }}
+</div>
+{% endif %}
+
+{% if leave.status == 'approved' %}
+<div class="info-box status-approved">
+    <strong>Your leave is now fully approved!</strong> Please ensure you complete the following before your leave begins:
+    <ul style="margin: 10px 0 0 0;">
+        <li>Complete and hand over any urgent pending tasks</li>
+        <li>Brief your colleagues about ongoing projects and responsibilities</li>
+        <li>Set up your out-of-office email message</li>
+        <li>Coordinate with your team for coverage during your absence</li>
+        <li>Inform key clients or stakeholders about your temporary absence if necessary</li>
+    </ul>
+</div>
+{% else %}
+<div class="info-box">
+    <strong>Next Step:</strong> Your application is now awaiting final admin approval. You'll receive another notification once it's fully processed. This typically takes 1-2 business days.
+</div>
+{% endif %}
+
+<a href="{{ base_url }}/leaves/{{ leave.id }}/" class="button">View Full Details</a>
+
+{% if leave.status == 'approved' %}
+<p>Enjoy your time off! We look forward to seeing you back refreshed and ready on {{ return_date|date:"F d, Y (l)" }}.</p>
+{% else %}
+<p>We'll keep you updated on the final approval status. Thank you for your patience.</p>
+{% endif %}
+
+<p>If you have any questions or need to make any changes, please contact HR immediately.</p>
+{% endblock %}

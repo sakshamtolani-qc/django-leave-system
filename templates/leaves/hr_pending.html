@@ -1,0 +1,88 @@
+<!-- templates/leaves/hr_pending.html -->
+{% extends 'base.html' %}
+
+{% block title %}HR Pending Approvals{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-check me-2"></i>HR Pending Approvals</h2>
+    <div class="badge bg-warning text-dark fs-6">
+        {{ leaves|length }} pending
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% for leave in leaves %}
+        <div class="leave-card card mb-3 pending">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                            <div>
+                                <h5 class="mb-1">{{ leave.employee.get_full_name|default:leave.employee.username }}</h5>
+                                <p class="text-muted mb-0">{{ leave.employee.department|default:'No Department' }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-tag me-1"></i>{{ leave.leave_type.name }}
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ leave.start_date }} to {{ leave.end_date }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ leave.days_requested }} days
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-plus me-1"></i>Applied: {{ leave.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0">{{ leave.reason|truncatechars:120 }}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-{{ leave.priority }} me-2">{{ leave.get_priority_display }}</span>
+                            <span class="status-badge bg-warning text-dark">
+                                Pending HR Review
+                            </span>
+                        </div>
+                        
+                        <div class="btn-group d-block">
+                            <a href="{% url 'leaves:leave_detail' leave.pk %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Review & Approve
+                            </a>
+                        </div>
+                        
+                        {% if leave.priority == 'urgent' %}
+                        <div class="mt-2">
+                            <small class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Urgent
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h4 class="text-muted">All caught up!</h4>
+            <p class="text-muted">No leave applications pending HR review</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

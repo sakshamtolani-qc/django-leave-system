@@ -1,0 +1,131 @@
+<!-- templates/leaves/admin_pending.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Final Approvals{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-shield me-2"></i>Admin Final Approvals</h2>
+    <div class="badge bg-info text-white fs-6">
+        {{ leaves|length }} pending final approval
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% for leave in leaves %}
+        <div class="leave-card card mb-3 hr_approved">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                            <div>
+                                <h5 class="mb-1">{{ leave.employee.get_full_name|default:leave.employee.username }}</h5>
+                                <p class="text-muted mb-0">{{ leave.employee.department|default:'No Department' }} • {{ leave.employee.employee_id|default:'-' }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-tag me-1"></i>{{ leave.leave_type.name }}
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ leave.start_date }} to {{ leave.end_date }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ leave.days_requested }} days
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>HR Approved: {{ leave.hr_approved_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-1">{{ leave.reason|truncatechars:120 }}</p>
+                        {% if leave.hr_comments %}
+                        <div class="alert alert-success alert-sm mt-2 mb-0">
+                            <small><strong>HR Comments:</strong> {{ leave.hr_comments|truncatechars:100 }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="mb-2">
+                            <span class="badge bg-{{ leave.priority }} me-2">{{ leave.get_priority_display }}</span>
+                            <span class="status-badge bg-info text-white">
+                                Awaiting Final Approval
+                            </span>
+                        </div>
+                        
+                        <div class="btn-group d-block">
+                            <a href="{% url 'leaves:leave_detail' leave.pk %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-eye me-1"></i>Final Review
+                            </a>
+                        </div>
+                        
+                        {% if leave.priority == 'urgent' %}
+                        <div class="mt-2">
+                            <small class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Urgent - Needs immediate attention
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-user-check me-1"></i>HR: {{ leave.hr_approved_by.get_full_name|default:leave.hr_approved_by.username }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-check-double fa-4x text-success mb-3"></i>
+            <h4 class="text-muted">All applications processed!</h4>
+            <p class="text-muted">No leave applications pending admin final approval</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Admin Statistics -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <i class="fas fa-hourglass-half fa-2x text-info mb-2"></i>
+                        <h5>{{ leaves|length }}</h5>
+                        <p class="text-muted mb-0">Pending Final Approval</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                        <h5>{% for leave in leaves %}{% if leave.priority == 'urgent' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}</h5>
+                        <p class="text-muted mb-0">Urgent</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-calendar-week fa-2x text-warning mb-2"></i>
+                        <h5>{% now "W" %}</h5>
+                        <p class="text-muted mb-0">Current Week</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h5>Available</h5>
+                        <p class="text-muted mb-0">Ready for Approval</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

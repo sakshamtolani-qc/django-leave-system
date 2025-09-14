@@ -1,0 +1,15 @@
+<!-- templates/dashboard/access_denied.html -->
+{% extends 'base.html' %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <i class="fas fa-lock fa-5x text-danger mb-4"></i>
+    <h1 class="display-4 text-danger">Access Denied</h1>
+    <p class="lead text-muted">You don't have permission to view this page.</p>
+    <a href="{% url 'dashboard:home' %}" class="btn btn-primary mt-3">
+        <i class="fas fa-home me-2"></i>Back to Dashboard
+    </a>
+</div>
+{% endblock %}

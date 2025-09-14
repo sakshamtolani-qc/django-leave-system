@@ -1,0 +1,65 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Leave Application Status Update{% endblock %}
+
+{% block header_subtitle %}Application Status Update{% endblock %}
+
+{% block content %}
+<h2>Leave Application Status Update</h2>
+
+<p>Dear {{ leave.employee.first_name|default:leave.employee.username }},</p>
+
+<p>We wanted to inform you about the status of your recent leave application.</p>
+
+<div class="info-box status-rejected">
+    <strong>Status:</strong> Application Not Approved<br>
+    <strong>Application ID:</strong> #{{ leave.id }}<br>
+    <strong>Reviewed By:</strong> {{ reviewer_name }}<br>
+    <strong>Review Date:</strong> {{ review_date|date:"F d, Y \a\t g:i A" }}
+</div>
+
+<table class="details-table">
+    <tr>
+        <th>Leave Type</th>
+        <td>{{ leave.leave_type.name }}</td>
+    </tr>
+    <tr>
+        <th>Requested Dates</th>
+        <td>{{ leave.start_date|date:"F d, Y" }} to {{ leave.end_date|date:"F d, Y" }}</td>
+    </tr>
+    <tr>
+        <th>Total Days</th>
+        <td>{{ leave.days_requested }} day{{ leave.days_requested|pluralize }}</td>
+    </tr>
+    <tr>
+        <th>Original Reason</th>
+        <td>{{ leave.reason }}</td>
+    </tr>
+</table>
+
+{% if comments %}
+<div class="info-box">
+    <strong>Reviewer's Comments:</strong><br>
+    {{ comments }}
+</div>
+{% endif %}
+
+<div class="info-box">
+    <strong>What you can do next:</strong>
+    <ul style="margin: 10px 0 0 0;">
+        <li>Review the feedback provided by the reviewer</li>
+        <li>Consider submitting a new application with different dates</li>
+        <li>Speak with your direct supervisor or HR if you have questions about this decision</li>
+        <li>Check your available leave balance for alternative planning</li>
+        <li>If this was urgent, consider discussing emergency leave options with HR</li>
+    </ul>
+</div>
+
+<a href="{{ base_url }}/leaves/apply/" class="button">Submit New Application</a>
+
+<p>We understand this may be disappointing, and we encourage you to reach out if you'd like to discuss this decision or explore alternative options.</p>
+
+<p>You can always submit a new leave application with different dates or circumstances. Our HR team is available to help you find the best solution for your time-off needs.</p>
+
+<p>For any questions or concerns about this decision, please don't hesitate to contact HR or your supervisor directly.</p>
+{% endblock %}

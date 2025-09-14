@@ -1,0 +1,426 @@
+<!-- templates/leaves/leave_detail.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Leave Application Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Leave Application Details</h5>
+                    <span class="status-badge bg-{{ leave.status|default:'secondary' }} text-white">
+                        {{ leave.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Employee:</strong></div>
+                    <div class="col-sm-8">{{ leave.employee.get_full_name|default:leave.employee.username }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Leave Type:</strong></div>
+                    <div class="col-sm-8">{{ leave.leave_type.name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Duration:</strong></div>
+                    <div class="col-sm-8">{{ leave.start_date }} to {{ leave.end_date }} ({{ leave.days_requested }} days)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Priority:</strong></div>
+                    <div class="col-sm-8">
+                        <span class="badge bg-primary">{{ leave.get_priority_display }}</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Reason:</strong></div>
+                    <div class="col-sm-8">{{ leave.reason }}</div>
+                </div>
+                {% if leave.attachment %}
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Attachment:</strong></div>
+                    <div class="col-sm-8">
+                        <a href="{{ leave.attachment.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="fas fa-download me-2"></i>Download
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Applied on:</strong></div>
+                    <div class="col-sm-8">{{ leave.created_at|date:"M d, Y H:i" }}</div>
+                </div>
+                
+                <!-- Two-Stage Approval Status -->
+                <div class="mt-4">
+                    <h6><i class="fas fa-user-check me-2"></i>Approval Workflow</h6>
+                    
+                    <!-- Approval Timeline -->
+                    <div class="timeline mb-4">
+                        <!-- HR Approval Stage -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker {% if leave.hr_approved or leave.status == 'approved' %}completed{% endif %}"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><i class="fas fa-users me-2"></i>HR Approval</h6>
+                                        {% if leave.hr_approved or leave.status == 'approved' %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle me-1"></i>Approved by {{ leave.hr_approved_by.get_full_name|default:leave.hr_approved_by.username }}
+                                            </span>
+                                            <small class="text-muted d-block">{{ leave.hr_approved_at|date:"M d, Y H:i" }}</small>
+                                            {% if leave.hr_comments %}
+                                            <div class="alert alert-success alert-sm mt-2 mb-0">
+                                                <small><strong>HR Comments:</strong> {{ leave.hr_comments }}</small>
+                                            </div>
+                                            {% endif %}
+                                        {% elif leave.status == 'rejected' %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Rejected at HR level
+                                            </span>
+                                            {% if leave.hr_comments %}
+                                            <div class="alert alert-danger alert-sm mt-2 mb-0">
+                                                <small><strong>HR Comments:</strong> {{ leave.hr_comments }}</small>
+                                            </div>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-warning">
+                                                <i class="fas fa-clock me-1"></i>Pending HR Review
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Approval Stage -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker {% if leave.status == 'approved' %}completed{% endif %} 
+                                         {% if not leave.hr_approved and leave.status != 'approved' %}disabled{% endif %}"></div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><i class="fas fa-user-shield me-2"></i>Admin Final Approval</h6>
+                                        {% if leave.status == 'approved' %}
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle me-1"></i>Approved by {{ leave.admin_approved_by.get_full_name|default:leave.admin_approved_by.username }}
+                                            </span>
+                                            <small class="text-muted d-block">{{ leave.admin_approved_at|date:"M d, Y H:i" }}</small>
+                                            {% if leave.admin_comments %}
+                                            <div class="alert alert-success alert-sm mt-2 mb-0">
+                                                <small><strong>Admin Comments:</strong> {{ leave.admin_comments }}</small>
+                                            </div>
+                                            {% endif %}
+                                        {% elif leave.status == 'rejected' and leave.hr_approved %}
+                                            <span class="text-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Rejected at Admin level
+                                            </span>
+                                            {% if leave.admin_comments %}
+                                            <div class="alert alert-danger alert-sm mt-2 mb-0">
+                                                <small><strong>Admin Comments:</strong> {{ leave.admin_comments }}</small>
+                                            </div>
+                                            {% endif %}
+                                        {% elif leave.status == 'hr_approved' %}
+                                            <span class="text-warning">
+                                                <i class="fas fa-clock me-1"></i>Pending Admin Final Approval
+                                            </span>
+                                        {% elif not leave.hr_approved %}
+                                            <span class="text-muted">
+                                                <i class="fas fa-lock me-1"></i>Waiting for HR Approval
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Approval Action Form -->
+                {% if can_approve %}
+                <div class="alert alert-info">
+                    {% if user.role == 'hr' and leave.status == 'pending' %}
+                        <h6><i class="fas fa-user-check me-2"></i>HR Approval Required</h6>
+                        <p class="mb-3">As HR, you need to review and approve this leave application before it goes to Admin for final approval.</p>
+                    {% elif user.role == 'admin' and leave.status == 'hr_approved' or user.is_superuser and leave.status == 'hr_approved' %}
+                        <h6><i class="fas fa-user-shield me-2"></i>Admin Final Approval Required</h6>
+                        <p class="mb-3">HR has approved this application. As Admin, you have the final approval authority.</p>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'leaves:approve_leave' leave.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Decision:</strong></label>
+                            <div class="btn-group d-block" role="group">
+                                <input type="radio" class="btn-check" name="action" id="approve" value="approve" required>
+                                <label class="btn btn-outline-success" for="approve">
+                                    <i class="fas fa-check me-2"></i>Approve
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="action" id="reject" value="reject" required>
+                                <label class="btn btn-outline-danger" for="reject">
+                                    <i class="fas fa-times me-2"></i>Reject
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="comments" class="form-label">Comments (Optional)</label>
+                            <textarea class="form-control" name="comments" id="comments" rows="3" 
+                                      placeholder="Add your comments or reasons for the decision..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Decision
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+                
+                <!-- Cancel Option for Employee -->
+                {% if leave.employee == user and leave.can_be_cancelled %}
+                <div class="mt-4">
+                    <a href="{% url 'leaves:cancel_leave' leave.pk %}" class="btn btn-danger"
+                       onclick="return confirm('Are you sure you want to cancel this leave application? This action cannot be undone.')">
+                        <i class="fas fa-times me-2"></i>Cancel Application
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Discussion & Comments</h6>
+            </div>
+            <div class="card-body">
+                {% for comment in comments %}
+                <div class="d-flex mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-circle fa-2x text-muted"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">{{ comment.user.get_full_name|default:comment.user.username }}</h6>
+                            <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <p class="mb-0">{{ comment.comment }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No comments yet. Be the first to add a comment!</p>
+                {% endfor %}
+                
+                <!-- Add Comment Form -->
+                <div class="border-top pt-3 mt-3">
+                    <h6>Add a Comment</h6>
+                    <form method="post" action="{% url 'leaves:add_comment' leave.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea class="form-control" name="comment" rows="3" 
+                                      placeholder="Add your comment or question..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Add Comment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Application Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-calendar-day fa-3x text-primary mb-2"></i>
+                    <h4 class="text-primary">{{ leave.days_requested }}</h4>
+                    <p class="text-muted">Days Requested</p>
+                </div>
+                
+                <hr>
+                
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Application ID:</span>
+                        <span class="fw-bold">#{{ leave.pk }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Priority:</span>
+                        <span class="badge bg-{{ leave.priority }}">{{ leave.get_priority_display }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Current Stage:</span>
+                        <span class="fw-bold">
+                            {% if leave.status == 'pending' %}HR Review{% elif leave.status == 'hr_approved' %}Admin Review{% elif leave.status == 'approved' %}Approved{% else %}{{ leave.get_status_display }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Last Updated:</span>
+                        <span>{{ leave.updated_at|date:"M d, H:i" }}</span>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                    <label class="form-label small">Approval Progress:</label>
+                    <div class="progress" style="height: 8px;">
+                        {% if leave.status == 'pending' %}
+                        <div class="progress-bar bg-warning" style="width: 25%"></div>
+                        {% elif leave.status == 'hr_approved' %}
+                        <div class="progress-bar bg-info" style="width: 75%"></div>
+                        {% elif leave.status == 'approved' %}
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                        {% elif leave.status == 'rejected' %}
+                        <div class="progress-bar bg-danger" style="width: 100%"></div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-1">
+                        <span>Applied</span>
+                        <span>HR</span>
+                        <span>Admin</span>
+                        <span>Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Employee Info (for HR/Admin) -->
+        {% if user.role != 'employee' %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Employee Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Employee ID:</span>
+                        <span>{{ leave.employee.employee_id|default:'-' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Department:</span>
+                        <span>{{ leave.employee.department|default:'-' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Role:</span>
+                        <span>{{ leave.employee.get_role_display }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Join Date:</span>
+                        <span>{{ leave.employee.date_joined|date:"M Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if user.role == 'hr' %}
+                    <a href="{% url 'leaves:hr_pending' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-list me-2"></i>View All HR Pending
+                    </a>
+                    {% elif user.role == 'admin' or user.is_superuser %}
+                    <a href="{% url 'leaves:admin_pending' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-list me-2"></i>View All Admin Pending
+                    </a>
+                    {% endif %}
+                    
+                    {% if leave.attachment %}
+                    <a href="{{ leave.attachment.url }}" class="btn btn-outline-info btn-sm" target="_blank">
+                        <i class="fas fa-paperclip me-2"></i>View Attachment
+                    </a>
+                    {% endif %}
+                    
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-print me-2"></i>Print Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding: 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 7px;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #667eea;
+    z-index: 1;
+}
+
+.timeline-marker.completed {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.timeline-marker.disabled {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.timeline-content {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress {
+    border-radius: 4px;
+}
+
+@media print {
+    .btn, .card-header, .timeline-marker {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

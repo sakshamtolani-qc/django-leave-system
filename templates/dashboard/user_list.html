@@ -1,0 +1,315 @@
+<!-- templates/dashboard/user_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users me-2"></i>User Management</h2>
+    <a href="{% url 'accounts:add_user' %}" class="btn btn-success">
+        <i class="fas fa-user-plus me-2"></i>Add New Employee
+    </a>
+</div>
+
+<!-- User Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card primary">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ users|length }}</h3>
+                <p class="mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-user-check fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ active_users_count }}</h3>
+                <p class="mb-0">Active Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card warning">
+            <div class="card-body text-center">
+                <i class="fas fa-user-clock fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ active_users_count }}</h3>
+                <p class="mb-0">Inactive Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card info">
+            <div class="card-body text-center">
+                <i class="fas fa-user-tie fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ hr_admin_count }}</h3>
+                <p class="mb-0">HR & Admin</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User List -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Employee Directory</h5>
+            <div class="input-group" style="width: 300px;">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="userSearch" placeholder="Search users...">
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="userTable">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Contact</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in users %}
+                    <tr data-user-id="{{ emp.id }}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if emp.profile_picture %}
+                                <img src="{{ emp.profile_picture.url }}" alt="Profile" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ emp.get_full_name|default:emp.username }}</div>
+                                    <small class="text-muted">{{ emp.employee_id|default:'No ID' }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>{{ emp.email }}</div>
+                                <small class="text-muted">{{ emp.phone|default:'No phone' }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if emp.role == 'admin' %}danger{% elif emp.role == 'hr' %}warning{% elif emp.role == 'manager' %}info{% else %}secondary{% endif %}">
+                                {{ emp.get_role_display }}
+                            </span>
+                        </td>
+                        <td>{{ emp.department|default:'Not assigned' }}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input user-status-toggle" type="checkbox" 
+                                       {% if emp.is_active %}checked{% endif %}
+                                       data-user-id="{{ emp.id }}"
+                                       {% if emp == user %}disabled title="Cannot deactivate your own account"{% endif %}>
+                                <label class="form-check-label">
+                                    <span class="badge bg-{% if emp.is_active %}success{% else %}secondary{% endif %}">
+                                        {% if emp.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <span title="{{ emp.date_joined }}">{{ emp.date_joined|date:"M d, Y" }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'accounts:profile' %}?user={{ emp.id }}" class="btn btn-sm btn-outline-primary" title="View Profile">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="/admin/accounts/user/{{ emp.id }}/change/" target="_blank" class="btn btn-sm btn-outline-info" title="Edit in Admin">
+                                    <i class="fas fa-cog"></i>
+                                </a>
+                                {% endif %}
+                                {% if emp.leave_applications.count > 0 %}
+                                <button class="btn btn-sm btn-outline-success" title="Leave History" onclick="showLeaveHistory({{ emp.id }})">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No users found. <a href="{% url 'accounts:add_user' %}">Add the first employee</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Leave History Modal -->
+<div class="modal fade" id="leaveHistoryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Leave History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="leaveHistoryContent">
+                    <div class="text-center">
+                        <div class="loading-spinner"></div>
+                        <p>Loading leave history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('userSearch');
+    const table = document.getElementById('userTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const text = row.textContent.toLowerCase();
+            
+            if (text.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+    
+    // Status toggle functionality
+    const toggles = document.querySelectorAll('.user-status-toggle');
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            const isActive = this.checked;
+            
+            // Disable toggle during request
+            this.disabled = true;
+            
+            fetch(`/dashboard/users/${userId}/toggle/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update badge
+                    const badge = this.parentNode.querySelector('.badge');
+                    if (data.is_active) {
+                        badge.textContent = 'Active';
+                        badge.className = 'badge bg-success';
+                    } else {
+                        badge.textContent = 'Inactive';
+                        badge.className = 'badge bg-secondary';
+                    }
+                    
+                    // Show success message
+                    showToast(data.message, 'success');
+                } else {
+                    // Revert toggle on error
+                    this.checked = !isActive;
+                    showToast(data.error || 'Failed to update user status', 'danger');
+                }
+                
+                // Re-enable toggle
+                this.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.checked = !isActive;
+                this.disabled = false;
+                showToast('An error occurred. Please try again.', 'danger');
+            });
+        });
+    });
+});
+
+function showLeaveHistory(userId) {
+    const modal = new bootstrap.Modal(document.getElementById('leaveHistoryModal'));
+    modal.show();
+    
+    // This would be implemented with an AJAX call to get leave history
+    document.getElementById('leaveHistoryContent').innerHTML = 
+        '<div class="alert alert-info">Leave history functionality would be implemented here.</div>';
+}
+
+function showToast(message, type = 'info') {
+    // Create and show bootstrap toast
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1070';
+    document.body.appendChild(container);
+    return container;
+}
+</script>
+
+<style>
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.form-switch .form-check-input:disabled {
+    opacity: 0.5;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

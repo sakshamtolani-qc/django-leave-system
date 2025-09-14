@@ -1,0 +1,54 @@
+<!-- templates/emails/leave_status_notification.html -->
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Leave Application - Status Update{% endblock %}
+
+{% block header_subtitle %}
+<p style="margin: 10px 0 0 0; opacity: 0.9;">Status Change Notification</p>
+{% endblock %}
+
+{% block content %}
+<h2>Leave Application Status Update</h2>
+
+<p>Hi {{ leave.employee.first_name }},</p>
+
+<p>There's been an update to your leave application status.</p>
+
+<div class="info-box {% if leave.status == 'approved' %}status-approved{% elif leave.status == 'rejected' %}status-rejected{% else %}status-pending{% endif %}">
+    <strong>New Status:</strong> {{ leave.get_status_display }}
+</div>
+
+<table class="details-table">
+    <tr>
+        <th>Application ID</th>
+        <td>#{{ leave.id }}</td>
+    </tr>
+    <tr>
+        <th>Leave Type</th>
+        <td>{{ leave.leave_type.name }}</td>
+    </tr>
+    <tr>
+        <th>Dates</th>
+        <td>{{ leave.start_date|date:"F d, Y" }} to {{ leave.end_date|date:"F d, Y" }}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{{ leave.get_status_display }}</td>
+    </tr>
+    <tr>
+        <th>Last Updated</th>
+        <td>{{ leave.updated_at|date:"F d, Y g:i A" }}</td>
+    </tr>
+</table>
+
+{% if comments %}
+<div class="info-box">
+    <strong>Latest Comments:</strong><br>
+    {{ comments }}
+</div>
+{% endif %}
+
+<a href="{{ base_url }}/leaves/{{ leave.id }}/" class="button">View Full Details</a>
+
+<p>You can always check the latest status of your applications by logging into the system.</p>
+{% endblock %}

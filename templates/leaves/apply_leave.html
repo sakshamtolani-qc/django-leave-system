@@ -1,0 +1,46 @@
+<!-- templates/leaves/apply_leave.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Apply for Leave{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Apply for Leave</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Application
+                        </button>
+                        <a href="{% url 'leaves:my_leaves' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>View My Leaves
+                        </a>
+                        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <h6><i class="fas fa-info-circle me-2"></i>Leave Policy Guidelines</h6>
+                    <ul class="text-muted small">
+                        <li>All leave applications must be submitted at least 2 days in advance</li>
+                        <li>All leave applications require admin approval</li>
+                        <li>Sick leave may require medical certificate for more than 3 days</li>
+                        <li>Emergency leave can be applied retrospectively with proper documentation</li>
+                        <li>You will be notified once your application is reviewed by the administrator</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

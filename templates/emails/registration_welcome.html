@@ -1,0 +1,65 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Welcome to {{ company_name }}{% endblock %}
+
+{% block header_subtitle %}Welcome to Our Team!{% endblock %}
+
+{% block content %}
+<h2>Welcome to {{ company_name|default:"Quorium Consulting" }}!</h2>
+
+<p>Dear {{ user.first_name|default:user.username }},</p>
+
+<p>We are delighted to welcome you to our team! Your account has been successfully created in our Leave Management System, and you now have access to all employee self-service features.</p>
+
+<div class="info-box">
+    <strong>Your Account Details:</strong><br>
+    <strong>Full Name:</strong> {{ user.get_full_name|default:user.username }}<br>
+    <strong>Username:</strong> {{ user.username }}<br>
+    <strong>Email:</strong> {{ user.email }}<br>
+    <strong>Employee ID:</strong> {{ user.employee_id|default:"Will be assigned soon" }}<br>
+    <strong>Department:</strong> {{ user.department|default:"Will be assigned soon" }}<br>
+    <strong>Role:</strong> {{ user.get_role_display }}
+</div>
+
+<div class="info-box status-approved">
+    <strong>What you can do with your account:</strong>
+    <ul style="margin: 10px 0 0 0;">
+        <li>Apply for various types of leave (Annual, Sick, Casual, etc.)</li>
+        <li>View your current leave balance and entitlements</li>
+        <li>Track the status of your leave applications in real-time</li>
+        <li>View your leave history and past applications</li>
+        <li>Update your personal profile information</li>
+        <li>Receive email notifications for all leave-related activities</li>
+    </ul>
+</div>
+
+<a href="{{ base_url }}" class="button">Access Leave Management System</a>
+
+<div class="info-box">
+    <strong>Getting Started:</strong>
+    <ol style="margin: 10px 0 0 0;">
+        <li>Log in using your username and the temporary password provided separately</li>
+        <li>Update your profile with current contact information</li>
+        <li>Review your leave balance and entitlements</li>
+        <li>Familiarize yourself with our leave policies</li>
+        <li>Submit your first leave application when needed</li>
+    </ol>
+</div>
+
+<div class="info-box">
+    <strong>Important Leave Policy Information:</strong>
+    <ul style="margin: 10px 0 0 0;">
+        <li>All leave applications require advance notice (minimum 2 days for planned leave)</li>
+        <li>Leave applications go through a two-step approval process (HR → Admin)</li>
+        <li>You'll receive email notifications for all status changes</li>
+        <li>Emergency or sick leave can be applied retroactively with proper documentation</li>
+        <li>Your leave balance resets annually according to company policy</li>
+    </ul>
+</div>
+
+<p>Our HR team is here to support you and answer any questions you might have about the leave management system or company policies. Please don't hesitate to reach out if you need assistance getting started.</p>
+
+<p>We're excited to have you as part of our team and look forward to supporting your work-life balance through our comprehensive leave management system.</p>
+
+<p>Welcome aboard!</p>
+{% endblock %}

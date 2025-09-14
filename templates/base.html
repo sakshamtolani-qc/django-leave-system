@@ -1,0 +1,301 @@
+<!-- templates/base.html - Updated navigation for HR → Admin workflow -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Management System - {% block title %}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        .sidebar .nav-link .badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.7rem;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .stats-card.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .stats-card.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stats-card.warning {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        .stats-card.info {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .status-badge {
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+        }
+        .leave-card {
+            border-left: 4px solid #667eea;
+        }
+        .leave-card.approved {
+            border-left-color: #28a745;
+        }
+        .leave-card.rejected {
+            border-left-color: #dc3545;
+        }
+        .leave-card.pending {
+            border-left-color: #ffc107;
+        }
+        .leave-card.hr_approved {
+            border-left-color: #17a2b8;
+        }
+        .nav-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard:home' %}">
+                <i class="fas fa-calendar-alt me-2"></i>Leave Management
+            </a>
+            
+            {% if user.is_authenticated %}
+            <div class="navbar-nav ms-auto">
+                <!-- Notification Bell (for future use) -->
+                <div class="nav-item me-3">
+                    <a class="nav-link" href="#" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        {% if user.role == 'hr' %}
+                            <!-- HR pending count would go here -->
+                        {% elif user.role == 'admin' or user.is_superuser %}
+                            <!-- Admin pending count would go here -->
+                        {% endif %}
+                    </a>
+                </div>
+                
+                <!-- User Dropdown -->
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                        <small class="badge bg-secondary">{{ user.get_role_display }}</small>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user-edit me-2"></i>Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% if user.is_authenticated %}
+            <!-- Sidebar -->
+            <div class="col-md-2 p-0">
+                <div class="sidebar p-3">
+                    <ul class="nav flex-column">
+                        <!-- Common Navigation -->
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'dashboard:home' %}">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- Employee Section -->
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if 'my_leaves' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'leaves:my_leaves' %}">
+                                <i class="fas fa-calendar-day me-2"></i>My Leaves
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {% if 'apply_leave' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'leaves:apply_leave' %}">
+                                <i class="fas fa-plus-circle me-2"></i>Apply Leave
+                            </a>
+                        </li>
+                        
+                        <!-- HR Section -->
+                        {% if user.role == 'hr' %}
+                        <div class="nav-section">
+                            <div class="nav-section-title">HR Functions</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'hr_pending' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'leaves:hr_pending' %}">
+                                    <i class="fas fa-user-check me-2"></i>Pending Approvals
+                                    <!-- Dynamic badge would go here -->
+                                    <span class="badge bg-warning text-dark">{{ hr_pending_count|default:"" }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'add_user' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'accounts:add_user' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Add Employee
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'reports' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'dashboard:reports' %}">
+                                    <i class="fas fa-chart-bar me-2"></i>HR Reports
+                                </a>
+                            </li>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Admin Section -->
+                        {% if user.role == 'admin' or user.is_superuser %}
+                        <div class="nav-section">
+                            <div class="nav-section-title">Admin Functions</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'admin_pending' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'leaves:admin_pending' %}">
+                                    <i class="fas fa-user-shield me-2"></i>Final Approvals
+                                    <!-- Dynamic badge would go here -->
+                                    <span class="badge bg-info text-white">{{ admin_pending_count|default:"" }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'add_user' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'accounts:add_user' %}">
+                                    <i class="fas fa-user-plus me-2"></i>Add Employee
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'reports' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'dashboard:reports' %}">
+                                    <i class="fas fa-chart-line me-2"></i>Admin Reports
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link" href="/admin/" target="_blank">
+                                    <i class="fas fa-cogs me-2"></i>System Admin
+                                    <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i>
+                                </a>
+                            </li>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Settings Section -->
+                        <div class="nav-section">
+                            <div class="nav-section-title">Account</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'profile' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'accounts:profile' %}">
+                                    <i class="fas fa-user-cog me-2"></i>Profile Settings
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link" href="{% url 'accounts:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 main-content p-4">
+            {% else %}
+            <div class="col-12 main-content p-4">
+            {% endif %}
+                
+                <!-- Messages -->
+                {% if messages %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                            {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                            {% elif message.tags == 'error' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

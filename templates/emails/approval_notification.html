@@ -1,0 +1,91 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Leave Application Requires Your Approval{% endblock %}
+
+{% block header_subtitle %}Action Required - {{ approval_type }}{% endblock %}
+
+{% block content %}
+<h2>Leave Application Awaiting Your Approval</h2>
+
+<p>Dear {{ approver.first_name|default:approver.username }},</p>
+
+<p>A leave application has been submitted and requires your attention for <strong>{{ approval_type }}</strong>.</p>
+
+<div class="info-box status-pending">
+    <strong>Action Required:</strong> {{ approval_type }}<br>
+    <strong>Application ID:</strong> #{{ leave.id }}<br>
+    <strong>Priority:</strong> {{ leave.get_priority_display }}
+</div>
+
+<table class="details-table">
+    <tr>
+        <th>Employee</th>
+        <td>{{ leave.employee.get_full_name|default:leave.employee.username }}</td>
+    </tr>
+    <tr>
+        <th>Employee ID</th>
+        <td>{{ leave.employee.employee_id|default:"Not assigned" }}</td>
+    </tr>
+    <tr>
+        <th>Department</th>
+        <td>{{ leave.employee.department|default:"Not specified" }}</td>
+    </tr>
+    <tr>
+        <th>Leave Type</th>
+        <td>{{ leave.leave_type.name }}</td>
+    </tr>
+    <tr>
+        <th>Start Date</th>
+        <td>{{ leave.start_date|date:"F d, Y (l)" }}</td>
+    </tr>
+    <tr>
+        <th>End Date</th>
+        <td>{{ leave.end_date|date:"F d, Y (l)" }}</td>
+    </tr>
+    <tr>
+        <th>Total Days</th>
+        <td>{{ leave.days_requested }} day{{ leave.days_requested|pluralize }}</td>
+    </tr>
+    <tr>
+        <th>Submitted On</th>
+        <td>{{ leave.created_at|date:"F d, Y \a\t g:i A" }}</td>
+    </tr>
+</table>
+
+<div class="info-box">
+    <strong>Employee's Reason:</strong><br>
+    {{ leave.reason }}
+</div>
+
+{% if leave.status == 'hr_approved' %}
+<div class="info-box status-approved">
+    <strong>HR Review Completed:</strong><br>
+    Approved by {{ leave.hr_approved_by.get_full_name|default:leave.hr_approved_by.username }} on {{ leave.hr_approved_at|date:"F d, Y" }}<br>
+    {% if leave.hr_comments %}
+    <strong>HR Comments:</strong> {{ leave.hr_comments }}
+    {% endif %}
+</div>
+{% endif %}
+
+<a href="{{ base_url }}/leaves/{{ leave.id }}/" class="button">Review & Process Application</a>
+
+<div class="info-box">
+    <strong>Required Actions:</strong>
+    <ul style="margin: 10px 0 0 0;">
+        <li>Review the application details and employee information</li>
+        <li>Check employee's leave history if necessary</li>
+        <li>Approve or reject the application with appropriate comments</li>
+        <li>Employee will be automatically notified of your decision</li>
+    </ul>
+</div>
+
+{% if leave.priority == 'urgent' %}
+<div class="info-box" style="border-left-color: #dc3545; background-color: #f8d7da; color: #721c24;">
+    <strong>URGENT:</strong> This application has been marked as urgent and requires immediate attention.
+</div>
+{% endif %}
+
+<p>Please review this application at your earliest convenience. The employee is waiting for your decision to plan their leave accordingly.</p>
+
+<p>If you have any questions about this application, you can contact the employee directly or reach out to HR.</p>
+{% endblock %}
