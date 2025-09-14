@@ -1,15 +1,16 @@
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
 import logging
-from datetime import timedelta
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Content
+import json
 
 logger = logging.getLogger(__name__)
 
 def send_email_notification(subject, template_name, context, recipient_email, from_email=None):
     """
-    Send an email notification using HTML templates
+    Send an email notification using SendGrid API and HTML templates
     """
     if from_email is None:
         from_email = settings.DEFAULT_FROM_EMAIL
@@ -26,17 +27,24 @@ def send_email_notification(subject, template_name, context, recipient_email, fr
         html_content = render_to_string(template_name, context)
         text_content = strip_tags(html_content)
         
-        # Send email
-        send_mail(
-            subject=subject,
-            message=text_content,
+        # Create SendGrid message
+        message = Mail(
             from_email=from_email,
-            recipient_list=[recipient_email],
-            html_message=html_content,
-            fail_silently=False,
+            to_emails=recipient_email,
+            subject=subject,
+            plain_text_content=text_content,
+            html_content=html_content
         )
         
+        # Send email using SendGrid
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        response = sg.send(message)
+        
+        # Log response details
+        logger.info(f"SendGrid Response - Status: {response.status_code}")
+        logger.info(f"SendGrid Headers: {response.headers}")
         logger.info(f"Email sent successfully to {recipient_email}: {subject}")
+        
         return True
         
     except Exception as e:
@@ -47,6 +55,8 @@ def send_leave_status_notification(leave_application, approver):
     """
     Send notification when leave status changes
     """
+    from datetime import timedelta
+    
     if leave_application.status == 'approved':
         subject = f"Leave Application Approved - #{leave_application.id}"
         template = 'emails/leave_approved.html'
@@ -60,6 +70,9 @@ def send_leave_status_notification(leave_application, approver):
         subject = f"Leave Application Status Update - #{leave_application.id}"
         template = 'emails/leave_status_notification.html'
     
+    # Calculate return date
+    return_date = leave_application.end_date + timedelta(days=1)
+    
     context = {
         'leave': leave_application,
         'approver': approver,
@@ -67,7 +80,7 @@ def send_leave_status_notification(leave_application, approver):
         'comments': leave_application.hr_comments if approver.role == 'hr' else leave_application.admin_comments,
         'reviewer_name': approver.get_full_name() or approver.username,
         'review_date': leave_application.updated_at,
-        'return_date': leave_application.end_date + timedelta(days=1),
+        'return_date': return_date,
     }
     
     return send_email_notification(

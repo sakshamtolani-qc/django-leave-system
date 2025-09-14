@@ -50,7 +50,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "dashboard.context_processors.navigation_context",  # Add this line
+                "dashboard.context_processors.navigation_context",
             ],
         },
     },
@@ -67,7 +67,6 @@ DATABASES = {
     }
 }
 
-# For Production (PythonAnywhere MySQL)
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -117,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Asia/Kolkata"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
@@ -155,20 +154,13 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
-# Email Configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.zoho.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+# SendGrid Configuration
+SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='saksham@quoriumconsulting.com')
-
-print("EMAIL_HOST_USER",  EMAIL_HOST_USER)
 
 # Email Settings for Leave Management
 COMPANY_NAME = config('COMPANY_NAME', default='Quorium Consulting')
-COMPANY_EMAIL = config('COMPANY_EMAIL', default=EMAIL_HOST_USER)
+COMPANY_EMAIL = config('COMPANY_EMAIL', default='hr@quoriumconsulting.com')
 BASE_URL = config('BASE_URL', default='http://127.0.0.1:8000')
 
 # Security Settings (for production)
