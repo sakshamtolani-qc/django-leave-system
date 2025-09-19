@@ -20,7 +20,7 @@ def send_email_notification(subject, template_name, context, recipient_email, fr
         context.update({
             'company_name': getattr(settings, 'COMPANY_NAME', 'Quorium Consulting'),
             'company_email': getattr(settings, 'COMPANY_EMAIL', settings.DEFAULT_FROM_EMAIL),
-            'base_url': getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000'),
+            'base_url': getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000').rstrip('/'),
         })
         
         # Render HTML email
@@ -60,7 +60,7 @@ def send_new_employee_credentials_email(user, generated_password):
     context = {
         'user': user,
         'generated_password': generated_password,
-        'login_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000')}/accounts/login/",
+        'login_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000').rstrip('/')}/accounts/login/",
     }
     
     return send_email_notification(
@@ -78,7 +78,7 @@ def send_password_change_required_email(user):
     template = 'emails/password_change_required.html'
     context = {
         'user': user,
-        'change_password_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000')}/accounts/change-password/",
+        'change_password_url': f"{getattr(settings, 'BASE_URL', 'http://127.0.0.1:8000').rstrip('/')}/accounts/change-password/",
     }
     
     return send_email_notification(
