@@ -81,7 +81,7 @@ class User(AbstractUser):
                 crop='fill', 
                 gravity='face',
                 quality='auto',
-                format='auto'
+                fetch_format='auto'
             )
         return None
     
@@ -94,7 +94,7 @@ class User(AbstractUser):
                 crop='fill', 
                 gravity='face',
                 quality='auto',
-                format='auto'
+                fetch_format='auto'
             )
         return None
     
