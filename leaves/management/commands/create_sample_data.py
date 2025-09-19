@@ -19,9 +19,9 @@ class Command(BaseCommand):
         
         # Create leave types
         leave_types = [
-            {'name': 'Annual Leave', 'description': 'Yearly vacation days', 'max_days_per_request': 30},
-            {'name': 'Sick Leave', 'description': 'Medical leave', 'max_days_per_request': 10},
-            {'name': 'Casual Leave', 'description': 'Personal days', 'max_days_per_request': 7},
+            {'name': 'Annual Leave', 'description': 'Yearly vacation days', 'max_days_per_request': 10},
+            {'name': 'Sick Leave', 'description': 'Medical leave', 'max_days_per_request': 3},
+            {'name': 'Casual Leave', 'description': 'Personal days', 'max_days_per_request': 2},
             {'name': 'Maternity Leave', 'description': 'Maternity leave', 'max_days_per_request': 90},
             {'name': 'Paternity Leave', 'description': 'Paternity leave', 'max_days_per_request': 15},
             {'name': 'Emergency Leave', 'description': 'Emergency situations', 'max_days_per_request': 5},

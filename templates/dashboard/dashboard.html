@@ -136,33 +136,33 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
                         <span>Annual Leave</span>
-                        <span class="fw-bold">{{ leave_balance.annual_leave }}/21</span>
+                        <span class="fw-bold">{{ leave_balance.annual_leave }}/10</span>
                     </div>
                     <div class="progress mb-2">
                         <div class="progress-bar" 
-                             style="width: {% widthratio leave_balance.annual_leave 21 100 %}%">
+                             style="width: {% widthratio leave_balance.annual_leave 10 100 %}%">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
                         <span>Sick Leave</span>
-                        <span class="fw-bold">{{ leave_balance.sick_leave }}/10</span>
+                        <span class="fw-bold">{{ leave_balance.sick_leave }}/3</span>
                     </div>
                     <div class="progress mb-2">
                         <div class="progress-bar bg-warning" 
-                             style="width: {% widthratio leave_balance.sick_leave 10 100 %}%">
+                             style="width: {% widthratio leave_balance.sick_leave 3 100 %}%">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
                         <span>Casual Leave</span>
-                        <span class="fw-bold">{{ leave_balance.casual_leave }}/7</span>
+                        <span class="fw-bold">{{ leave_balance.casual_leave }}/2</span>
                     </div>
                     <div class="progress mb-2">
                         <div class="progress-bar bg-info" 
-                             style="width: {% widthratio leave_balance.casual_leave 7 100 %}%">
+                             style="width: {% widthratio leave_balance.casual_leave 2 100 %}%">
                         </div>
                     </div>
                 </div>

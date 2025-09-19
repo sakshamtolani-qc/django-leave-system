@@ -107,9 +107,9 @@ class User(AbstractUser):
 # Rest of your models remain the same
 class LeaveBalance(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='leave_balance')
-    annual_leave = models.IntegerField(default=21)
-    sick_leave = models.IntegerField(default=10)
-    casual_leave = models.IntegerField(default=7)
+    annual_leave = models.IntegerField(default=10)
+    sick_leave = models.IntegerField(default=3)
+    casual_leave = models.IntegerField(default=2)
     maternity_leave = models.IntegerField(default=90)
     paternity_leave = models.IntegerField(default=15)
     
