@@ -9,10 +9,10 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
-                {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% if user.get_profile_picture_large_url %}
+                <img src="{{ user.get_profile_picture_large_url }}" alt="Profile" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                 {% else %}
-                    <i class="fas fa-user-circle fa-9x text-muted mb-3"></i>
+                <i class="fas fa-user-circle fa-9x text-muted mb-3"></i>
                 {% endif %}
                 
                 <h4>{{ user.get_full_name|default:user.username }}</h4>

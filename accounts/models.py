@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db import transaction
+from cloudinary.models import CloudinaryField
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -15,7 +16,19 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True)
     department = models.CharField(max_length=100, blank=True)
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_picture = CloudinaryField(
+        'profile_pictures',
+        null=True, 
+        blank=True,
+        transformation={
+            'width': 300,
+            'height': 300,
+            'crop': 'fill',
+            'gravity': 'face',
+            'quality': 'auto',
+            'format': 'auto'
+        }
+    )
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     
@@ -58,6 +71,32 @@ class User(AbstractUser):
                     self.employee_id = f"QCE-{timestamp}"
         
         super().save(*args, **kwargs)
+    
+    def get_profile_picture_url(self):
+        """Get optimized profile picture URL"""
+        if self.profile_picture:
+            return self.profile_picture.build_url(
+                width=150, 
+                height=150, 
+                crop='fill', 
+                gravity='face',
+                quality='auto',
+                format='auto'
+            )
+        return None
+    
+    def get_profile_picture_large_url(self):
+        """Get large profile picture URL for profile page"""
+        if self.profile_picture:
+            return self.profile_picture.build_url(
+                width=300, 
+                height=300, 
+                crop='fill', 
+                gravity='face',
+                quality='auto',
+                format='auto'
+            )
+        return None
     
     def __str__(self):
         return f"{self.username} - {self.get_role_display()}"

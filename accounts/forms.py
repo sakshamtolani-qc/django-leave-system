@@ -281,6 +281,17 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone', 'department', 'profile_picture']
+
+    def clean_profile_picture(self):
+        picture = self.cleaned_data.get('profile_picture')
+        if picture:
+            # Validate file size (max 5MB)
+            if picture.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("Image file too large ( > 5MB )")
+            # Validate file type
+            if not picture.content_type.startswith('image/'):
+                raise forms.ValidationError("Please upload a valid image file.")
+        return picture
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
