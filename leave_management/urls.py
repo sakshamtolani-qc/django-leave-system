@@ -1,3 +1,4 @@
+# leave_management/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -16,6 +17,13 @@ urlpatterns = [
     path('health/', health_check, name='health_check'),
     path('leaves/', include('leaves.urls')),
     path('dashboard/', include('dashboard.urls')),
+    
+    # New modules
+    path('employees/', include('employees.urls')),
+    path('performance/', include('performance.urls')),
+    path('announcements/', include('announcements.urls')),
+    path('helpdesk/', include('helpdesk.urls')),
+    path('documents/', include('documents.urls')),
 ]
 
 if settings.DEBUG:

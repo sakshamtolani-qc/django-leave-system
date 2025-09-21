@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Extended Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Profile Navigation -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group" role="group" aria-label="Profile sections">
+                        <a href="{% url 'accounts:basic_profile' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-user me-2"></i>Basic Info
+                        </a>
+                        <a href="{% url 'employees:extended_profile' %}" class="btn btn-primary">
+                            <i class="fas fa-id-card me-2"></i>Extended Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-id-card me-2"></i>Extended Profile Information</h4>
+                <p class="mb-0 text-muted">
+                    {% if is_own_profile %}
+                        Complete your professional profile and personal details
+                    {% else %}
+                        Viewing extended profile for {{ target_user.get_full_name }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>Privacy Notice:</strong> Personal information like emergency contacts and salary details are kept private and only visible to you and HR/Admin staff.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Personal Information -->
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-user me-2"></i>Personal Information
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                        {% if is_own_profile or user.role|default:'' in "hr,admin" %}
+                            {{ form.date_of_birth }}
+                        {% else %}
+                            <input type="text" class="form-control" value="Hidden" disabled>
+                        {% endif %}
+                        <div class="form-text">This information is private</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.address.id_for_label }}" class="form-label">Home Address</label>
+                        {% if is_own_profile or user.role|default:'' in "hr,admin" %}
+                            {{ form.address }}
+                        {% else %}
+                            <input type="text" class="form-control" value="Hidden" disabled>
+                        {% endif %}
+                        <div class="form-text">This information is private</div>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">
+                        <i class="fas fa-phone-alt me-2"></i>Emergency Contact
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Name</label>
+                            {% if is_own_profile or user.role|default:'' in "hr,admin" %}
+                                {{ form.emergency_contact_name }}
+                            {% else %}
+                                <input type="text" class="form-control" value="Hidden" disabled>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.emergency_contact_phone.id_for_label }}" class="form-label">Phone</label>
+                            {% if is_own_profile or user.role|default:'' in "hr,admin" %}
+                                {{ form.emergency_contact_phone }}
+                            {% else %}
+                                <input type="text" class="form-control" value="Hidden" disabled>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">
+                        <i class="fas fa-briefcase me-2"></i>Professional Information
+                    </h5>
+
+                    <div class="mb-3">
+                        <label for="{{ form.bio.id_for_label }}" class="form-label">Professional Bio</label>
+                        {{ form.bio }}
+                        <div class="form-text">Visible to all employees.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.skills.id_for_label }}" class="form-label">Skills & Expertise</label>
+                        {{ form.skills }}
+                        <div class="form-text">Visible to all employees. Separate skills with commas.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.salary.id_for_label }}" class="form-label">Salary</label>
+                        {% if is_own_profile or user.role|default:'' in "hr,admin" %}
+                            {{ form.salary }}
+                        {% else %}
+                            <input type="text" class="form-control" value="Hidden" disabled>
+                        {% endif %}
+                        <div class="form-text">This information is private</div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Update Extended Profile
+                        </button>
+                        <a href="{% url 'accounts:basic_profile' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Basic Info
+                        </a>
+                        <a href="{% url 'employees:profile' employee_id=target_user.id %}" class="btn btn-outline-info">
+                            <i class="fas fa-eye me-2"></i>View Profile
+                        </a>
+                        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Profile Completeness -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Profile Completeness</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" style="width: {% if target_user.first_name and target_user.last_name and target_user.email %}100{% elif target_user.first_name or target_user.last_name %}75{% else %}25{% endif %}%"></div>
+                        </div>
+                        <small class="text-muted">
+                            {% if target_user.first_name and target_user.last_name and target_user.email %}Complete{% else %}Missing some basic information{% endif %}
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Extended Information</h6>
+                        <div class="progress mb-2">
+                            {% with bio=form.instance.bio skills=form.instance.skills %}
+                            <div class="progress-bar bg-success" style="width: {% if bio and skills %}100{% elif bio or skills %}50{% else %}0{% endif %}%"></div>
+                            {% endwith %}
+                        </div>
+                        <small class="text-muted">
+                            {% if form.instance.bio and form.instance.skills %}Complete{% elif form.instance.bio or form.instance.skills %}Partially complete{% else %}Not started{% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.btn-group .btn { min-width: 150px; }
+.progress { height: 8px; }
+</style>
+{% endblock %}

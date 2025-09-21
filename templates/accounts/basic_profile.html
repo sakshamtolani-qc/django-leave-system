@@ -1,0 +1,141 @@
+<!-- templates/accounts/basic_profile.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Basic Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Profile Navigation -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-center">
+                    <div class="btn-group" role="group" aria-label="Profile sections">
+                        <a href="{% url 'accounts:basic_profile' %}" class="btn btn-primary">
+                            <i class="fas fa-user me-2"></i>Basic Info
+                        </a>
+                        <a href="{% url 'employees:extended_profile' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-id-card me-2"></i>Extended Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Basic Profile Information</h4>
+                <p class="mb-0 text-muted">Update your basic contact information and profile picture</p>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Current Profile Picture Display -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            {% if user.get_profile_picture_url %}
+                            <img src="{{ user.get_profile_picture_url }}" alt="Current Profile" 
+                                 class="rounded-circle img-fluid mb-2" style="width: 120px; height: 120px; object-fit: cover;">
+                            {% else %}
+                            <i class="fas fa-user-circle fa-8x text-muted mb-2"></i>
+                            {% endif %}
+                            <p class="small text-muted">Current Picture</p>
+                        </div>
+                        <div class="col-md-9">
+                            <h6>Profile Picture</h6>
+                            {{ form.profile_picture }}
+                            {% if form.profile_picture.errors %}
+                            <div class="text-danger">{{ form.profile_picture.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Upload a professional photo (max 5MB). JPG, PNG formats supported.</div>
+                        </div>
+                    </div>
+
+                    <!-- Name Fields -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <div class="text-danger">{{ form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <div class="text-danger">{{ form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Contact Fields -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="text-danger">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Format: +1-555-123-4567</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Basic Info
+                        </button>
+                        <a href="{% url 'employees:extended_profile' %}" class="btn btn-success">
+                            <i class="fas fa-arrow-right me-2"></i>Continue to Extended Profile
+                        </a>
+                        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Info Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Username:</strong> {{ user.username }}<br>
+                        <strong>Employee ID:</strong> {{ user.employee_id|default:"Not assigned" }}<br>
+                        <strong>Role:</strong> {{ user.get_role_display }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Department:</strong> {{ user.department|default:"Not assigned" }}<br>
+                        <strong>Joined:</strong> {{ user.date_joined|date:"F d, Y" }}<br>
+                        <strong>Status:</strong> 
+                        <span class="badge bg-{% if user.is_active %}success{% else %}secondary{% endif %}">
+                            {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.btn-group .btn {
+    min-width: 150px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!-- templates/documents/create_offer_letter.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Generate Offer Letter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-file-contract me-2"></i>Generate Offer Letter</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Generating offer letter for:</strong> {{ employee.get_full_name }} ({{ employee.email }})
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-file-contract me-2"></i>Generate Offer Letter
+                        </button>
+                        <a href="{% url 'dashboard:user_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Letter Preview</h6>
+            </div>
+            <div class="card-body">
+                <div class="offer-preview p-3 bg-light rounded">
+                    <p class="small text-muted">A professional offer letter will be generated with the following structure:</p>
+                    <ul class="small">
+                        <li>Company letterhead and branding</li>
+                        <li>Formal greeting and job offer</li>
+                        <li>Position details and compensation</li>
+                        <li>Terms and conditions</li>
+                        <li>Acceptance instructions</li>
+                        <li>Professional closing and signature blocks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

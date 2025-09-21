@@ -1,0 +1,199 @@
+<!-- templates/performance/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Performance Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-line me-2"></i>Performance Dashboard</h2>
+    {% if user.role in 'manager,hr,admin' or user.is_superuser %}
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-plus me-2"></i>New Review
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="showEmployeeSelector()">Create Review for Employee</a></li>
+            <li><a class="dropdown-item" href="{% url 'performance:bulk_review' %}">Bulk Review Creation</a></li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card primary">
+            <div class="card-body text-center">
+                <i class="fas fa-star fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ avg_rating }}</h3>
+                <p class="mb-0">Average Rating</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ total_reviews }}</h3>
+                <p class="mb-0">Total Reviews</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card info">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                <h3 class="mb-1">{% if latest_review %}{{ latest_review.review_period_end|date:"M Y" }}{% else %}N/A{% endif %}</h3>
+                <p class="mb-0">Latest Review</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card warning">
+            <div class="card-body text-center">
+                <i class="fas fa-trophy fa-2x mb-2"></i>
+                <h3 class="mb-1">{% if latest_review and latest_review.overall_rating >= 4 %}High{% elif latest_review and latest_review.overall_rating >= 3 %}Average{% else %}Needs Improvement{% endif %}</h3>
+                <p class="mb-0">Performance Level</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- My Reviews -->
+    <div class="col-md-{% if team_reviews %}8{% else %}12{% endif %}">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>My Performance Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% for review in reviews %}
+                <div class="review-card border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ review.get_review_type_display }}</h6>
+                            <p class="text-muted mb-2">{{ review.review_period_start|date:"M d" }} - {{ review.review_period_end|date:"M d, Y" }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="rating-stars me-3">
+                                    {% for i in "12345" %}
+                                    <i class="fas fa-star {% if review.overall_rating >= forloop.counter %}text-warning{% else %}text-muted{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                                <span class="badge bg-{% if review.overall_rating >= 4 %}success{% elif review.overall_rating >= 3 %}warning text-dark{% else %}danger{% endif %}">
+                                    {{ review.overall_rating|floatformat:1 }}/5.0
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">By {{ review.reviewer.get_full_name }}</small>
+                            <div class="mt-2">
+                                <a href="{% url 'performance:review_detail' pk=review.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if review.achievements %}
+                    <div class="mt-3">
+                        <small><strong>Key Achievements:</strong></small>
+                        <p class="small text-muted mb-0">{{ review.achievements|truncatewords:20 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No performance reviews yet</h5>
+                    <p class="text-muted">Your performance reviews will appear here once they're completed by your manager or HR.</p>
+                </div>
+                {% endfor %}
+                
+                {% if reviews|length >= 5 %}
+                <div class="text-center">
+                    <a href="{% url 'performance:my_reviews' %}" class="btn btn-outline-primary">View All Reviews</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team Reviews (for managers/HR) -->
+    {% if team_reviews %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-users me-2"></i>Recent Team Reviews</h6>
+            </div>
+            <div class="card-body">
+                {% for review in team_reviews %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1">{{ review.employee.get_full_name }}</h6>
+                        <small class="text-muted">{{ review.get_review_type_display }} - {{ review.review_period_end|date:"M Y" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-{% if review.overall_rating >= 4 %}success{% elif review.overall_rating >= 3 %}warning text-dark{% else %}danger{% endif %}">
+                            {{ review.overall_rating|floatformat:1 }}
+                        </span>
+                        <div class="mt-1">
+                            <a href="{% url 'performance:review_detail' pk=review.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Goal Tracking Section -->
+{% if latest_review %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-bullseye me-2"></i>Current Goals</h6>
+            </div>
+            <div class="card-body">
+                {% if latest_review.goals_for_next_period %}
+                <div class="goals-section">
+                    {{ latest_review.goals_for_next_period|linebreaks }}
+                </div>
+                {% else %}
+                <p class="text-muted">No goals set in your latest review.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.review-card {
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.rating-stars i {
+    font-size: 1rem;
+}
+
+.goals-section {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 1rem;
+    border-radius: 0.375rem;
+}
+</style>
+{% endblock %}

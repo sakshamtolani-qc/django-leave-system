@@ -1,0 +1,154 @@
+<!-- templates/helpdesk/ticket_detail.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>{{ ticket.title }}
+                    </h5>
+                    <span class="badge bg-{% if ticket.status == 'open' %}warning text-dark{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% elif ticket.status == 'closed' %}secondary{% else %}primary{% endif %} fs-6">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Ticket ID:</strong> {{ ticket.ticket_id }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Category:</strong> {{ ticket.get_category_display }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Priority:</strong> 
+                        <span class="badge bg-{% if ticket.priority == 'critical' %}danger{% elif ticket.priority == 'high' %}warning text-dark{% elif ticket.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                            {{ ticket.get_priority_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Assigned to:</strong> {{ ticket.assigned_to.get_full_name|default:"Unassigned" }}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Description:</h6>
+                    <div class="p-3 bg-light rounded">
+                        {{ ticket.description|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if ticket.attachment %}
+                <div class="mb-4">
+                    <h6>Attachment:</h6>
+                    <a href="{{ ticket.attachment.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-paperclip me-2"></i>Download
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Comments Section -->
+                <div class="mt-4">
+                    <h6>Comments & Updates:</h6>
+                    {% for comment in comments %}
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ comment.user.get_full_name }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"M d, Y g:i A" }}</small>
+                            </div>
+                            <p class="mb-0 mt-1">{{ comment.comment|linebreaks }}</p>
+                            {% if comment.is_internal %}
+                            <small class="badge bg-warning text-dark">Internal</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Add Comment -->
+                    <div class="mt-3">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ comment_form|crispy }}
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-paper-plane me-2"></i>Add Comment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        {% if can_manage %}
+        <!-- Status Management -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Ticket Management</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'helpdesk:update_ticket_status' pk=ticket.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            {% for value, display in ticket.STATUS_CHOICES %}
+                            <option value="{{ value }}" {% if ticket.status == value %}selected{% endif %}>{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Assign To</label>
+                        <select class="form-select" name="assigned_to">
+                            <option value="">Unassigned</option>
+                            {% for staff in it_staff %}
+                            <option value="{{ staff.id }}" {% if ticket.assigned_to == staff %}selected{% endif %}>{{ staff.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fas fa-save me-2"></i>Update
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Ticket Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Ticket Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Requester:</strong><br>
+                    {{ ticket.requester.get_full_name }}
+                </div>
+                <div class="mb-2">
+                    <strong>Created:</strong><br>
+                    {{ ticket.created_at|date:"M d, Y g:i A" }}
+                </div>
+                {% if ticket.resolved_at %}
+                <div class="mb-2">
+                    <strong>Resolved:</strong><br>
+                    {{ ticket.resolved_at|date:"M d, Y g:i A" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

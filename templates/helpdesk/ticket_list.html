@@ -1,0 +1,110 @@
+<!-- templates/helpdesk/ticket_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}My IT Tickets{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-headset me-2"></i>My IT Support Tickets</h2>
+    <a href="{% url 'helpdesk:create_ticket' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>New Ticket
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Filter by Status</label>
+                <select class="form-select" name="status" id="status">
+                    <option value="">All Statuses</option>
+                    {% for value, display in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline-secondary ms-2">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets List -->
+{% for ticket in tickets %}
+<div class="card mb-3 ticket-card">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-2">
+                    <h5 class="card-title mb-0">
+                        <a href="{% url 'helpdesk:ticket_detail' pk=ticket.pk %}" class="text-decoration-none">
+                            {{ ticket.title }}
+                        </a>
+                    </h5>
+                    <span class="badge bg-{% if ticket.status == 'open' %}warning text-dark{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% elif ticket.status == 'closed' %}secondary{% else %}primary{% endif %} ms-2">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-secondary">{{ ticket.get_category_display }}</span>
+                    <span class="badge bg-{% if ticket.priority == 'critical' %}danger{% elif ticket.priority == 'high' %}warning text-dark{% elif ticket.priority == 'medium' %}info{% else %}light text-dark{% endif %}">
+                        {{ ticket.get_priority_display }}
+                    </span>
+                    <small class="text-muted">Ticket #{{ ticket.ticket_id }}</small>
+                </div>
+                
+                <p class="card-text text-muted mb-2">{{ ticket.description|truncatewords:20 }}</p>
+                
+                <small class="text-muted">
+                    <i class="fas fa-calendar me-1"></i>Created {{ ticket.created_at|date:"M d, Y" }}
+                    {% if ticket.assigned_to %}
+                    <i class="fas fa-user ms-3 me-1"></i>Assigned to {{ ticket.assigned_to.get_full_name }}
+                    {% endif %}
+                </small>
+            </div>
+            
+            <div class="col-md-4 text-end">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'helpdesk:ticket_detail' pk=ticket.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                    {% if ticket.attachment %}
+                    <a href="{{ ticket.attachment.url }}" class="btn btn-outline-info btn-sm" target="_blank" title="Download attachment">
+                        <i class="fas fa-paperclip"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-2">
+                    <small class="text-muted">
+                        {% if ticket.status == 'resolved' %}
+                        <i class="fas fa-check-circle text-success me-1"></i>Resolved {{ ticket.resolved_at|date:"M d" }}
+                        {% elif ticket.status == 'in_progress' %}
+                        <i class="fas fa-spinner text-info me-1"></i>In Progress
+                        {% elif ticket.status == 'pending' %}
+                        <i class="fas fa-clock text-warning me-1"></i>Waiting for response
+                        {% else %}
+                        <i class="fas fa-hourglass-half text-muted me-1"></i>Open
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="text-center py-5">
+    <i class="fas fa-headset fa-4x text-muted mb-3"></i>
+    <h4 class="text-muted">No IT tickets yet</h4>
+    <p class="text-muted">Need technical support? Create your first ticket!</p>
+    <a href="{% url 'helpdesk:create_ticket' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Create Ticket
+    </a>
+</div>
+{% endfor %}
+{% endblock %}
+

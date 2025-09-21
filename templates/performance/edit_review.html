@@ -1,0 +1,36 @@
+<!-- templates/performance/edit_review.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Performance Review{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Performance Review</h4>
+                <p class="mb-0 text-muted">Employee: {{ employee.get_full_name }}</p>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Review
+                        </button>
+                        <a href="{% url 'performance:review_detail' pk=review.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" name="finalize" value="true" class="btn btn-success ms-auto">
+                            <i class="fas fa-lock me-2"></i>Save & Finalize
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

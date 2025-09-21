@@ -6,7 +6,7 @@ from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from .forms import UserRegistrationForm, ProfileUpdateForm, AddUserForm, CustomPasswordChangeForm
+from .forms import UserRegistrationForm, ProfileUpdateForm, AddUserForm, CustomPasswordChangeForm, BasicProfileUpdateForm
 from .models import LeaveBalance
 from .utils import (
     send_registration_welcome_email, 
@@ -36,16 +36,22 @@ class RegisterView(SuccessMessageMixin, CreateView):
 
 @login_required
 def profile_view(request):
+    """Basic profile view - redirects to basic profile update"""
+    return redirect('accounts:basic_profile')
+
+@login_required 
+def basic_profile_view(request):
+    """Basic profile information update (User model fields)"""
     if request.method == 'POST':
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        form = BasicProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Profile updated successfully!')
-            return redirect('accounts:profile')
+            messages.success(request, 'Basic profile updated successfully!')
+            return redirect('accounts:basic_profile')
     else:
-        form = ProfileUpdateForm(instance=request.user)
+        form = BasicProfileUpdateForm(instance=request.user)
 
-    return render(request, 'accounts/profile.html', {'form': form})
+    return render(request, 'accounts/basic_profile.html', {'form': form})
 
 @login_required
 def add_user_view(request):

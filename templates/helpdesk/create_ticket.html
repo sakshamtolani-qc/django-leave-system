@@ -1,0 +1,121 @@
+<!-- templates/helpdesk/create_ticket.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create IT Support Ticket{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create IT Support Ticket</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Before creating a ticket:</strong> Check if your issue can be resolved by:
+                    <ul class="mb-0 mt-2">
+                        <li>Restarting your computer or application</li>
+                        <li>Checking cable connections</li>
+                        <li>Consulting our IT knowledge base</li>
+                    </ul>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Issue Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="text-danger">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.priority.id_for_label }}" class="form-label">Priority Level *</label>
+                        {{ form.priority }}
+                        {% if form.priority.errors %}
+                        <div class="text-danger">{{ form.priority.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            <strong>Critical:</strong> System down, major security issue<br>
+                            <strong>High:</strong> Significant impact on work<br>
+                            <strong>Medium:</strong> Minor impact, workaround available<br>
+                            <strong>Low:</strong> Enhancement request, general question
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Issue Summary *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Detailed Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="text-danger">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            Please include: What were you trying to do? What happened? What did you expect to happen? 
+                            Any error messages? Steps to reproduce the issue?
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.attachment.id_for_label }}" class="form-label">Attachment</label>
+                        {{ form.attachment }}
+                        {% if form.attachment.errors %}
+                        <div class="text-danger">{{ form.attachment.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Screenshots, error logs, or relevant files (max 10MB)</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Ticket
+                        </button>
+                        <a href="{% url 'helpdesk:ticket_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Common Solutions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Hardware Issues:</h6>
+                        <ul class="small">
+                            <li>Check all cable connections</li>
+                            <li>Restart your computer</li>
+                            <li>Try a different USB port</li>
+                            <li>Test with another device</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Software Issues:</h6>
+                        <ul class="small">
+                            <li>Close and reopen the application</li>
+                            <li>Clear browser cache and cookies</li>
+                            <li>Update the software</li>
+                            <li>Run as administrator</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

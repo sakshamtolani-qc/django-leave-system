@@ -1,0 +1,375 @@
+<!-- templates/documents/id_card.html -->
+{% extends 'base.html' %}
+
+{% block title %}Employee ID Card - {{ employee.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Employee ID Card</h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- ID Card Design -->
+                <div id="id-card" class="id-card mx-auto">
+                    <!-- Front Side -->
+                    <div class="id-card-front">
+                        <div class="card-header-section">
+                            <div class="company-logo">
+                                <img src="https://res.cloudinary.com/sakshamtolani/image/upload/v1757790613/QC_Logo_g59zns.jpg" 
+                                     alt="{{ company_name }}" class="logo-img">
+                            </div>
+                            <div class="company-info">
+                                <h4>{{ company_name }}</h4>
+                                <p>Employee Identification Card</p>
+                            </div>
+                        </div>
+                        
+                        <div class="employee-section">
+                            <div class="employee-photo">
+                                {% if employee.get_profile_picture_url %}
+                                <img src="{{ employee.get_profile_picture_url }}" alt="Employee Photo" class="photo">
+                                {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-user fa-3x"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="employee-details">
+                                <h3>{{ employee.get_full_name|upper }}</h3>
+                                <div class="detail-row">
+                                    <span class="label">Employee ID:</span>
+                                    <span class="value">{{ employee.employee_id }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Department:</span>
+                                    <span class="value">{{ employee.department|default:"Not Assigned" }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Position:</span>
+                                    <span class="value">{{ employee.get_role_display }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Valid Until:</span>
+                                    <span class="value">{{ id_card.expiry_date|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer-section">
+                            <div class="qr-code">
+                                <div id="qr-placeholder" class="qr-placeholder">
+                                    <i class="fas fa-qrcode fa-2x"></i>
+                                    <small>QR Code</small>
+                                </div>
+                            </div>
+                            <div class="card-number">
+                                <small>Card #: {{ id_card.card_number }}</small>
+                                <small>Issued: {{ id_card.issue_date|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Back Side -->
+                    <div class="id-card-back">
+                        <div class="terms-section">
+                            <h5>Terms and Conditions</h5>
+                            <ul>
+                                <li>This card is property of {{ company_name }}</li>
+                                <li>Must be carried at all times on company premises</li>
+                                <li>Report lost/stolen cards immediately</li>
+                                <li>Non-transferable and for authorized use only</li>
+                                <li>Must be returned upon termination</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="emergency-info">
+                            <h6>Emergency Contact</h6>
+                            <p>Security: (555) 123-4567</p>
+                            <p>HR Dept: hr@quoriumconsulting.com</p>
+                        </div>
+                        
+                        <div class="signature-section">
+                            <div class="signature-line">
+                                <div class="line"></div>
+                                <small>Employee Signature</small>
+                            </div>
+                            <div class="signature-line">
+                                <div class="line"></div>
+                                <small>HR Authorization</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <button onclick="printCard()" class="btn btn-primary me-2">
+                    <i class="fas fa-print me-2"></i>Print ID Card
+                </button>
+                <button onclick="downloadCard()" class="btn btn-outline-info me-2">
+                    <i class="fas fa-download me-2"></i>Download
+                </button>
+                <a href="{% url 'dashboard:user_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.id-card {
+    width: 340px;
+    height: 214px; /* Credit card ratio */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+    margin: 20px auto;
+    color: white;
+    font-family: 'Arial', sans-serif;
+}
+
+.id-card-front {
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.company-logo .logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.company-info h4 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+    color: white;
+}
+
+.company-info p {
+    font-size: 10px;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.employee-section {
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.employee-photo {
+    margin-right: 15px;
+}
+
+.employee-photo .photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.photo-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.employee-details h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.5px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 3px;
+}
+
+.detail-row .label {
+    opacity: 0.8;
+    min-width: 80px;
+}
+
+.detail-row .value {
+    font-weight: bold;
+    text-align: right;
+}
+
+.card-footer-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+}
+
+.qr-placeholder {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.qr-placeholder i {
+    font-size: 14px;
+}
+
+.qr-placeholder small {
+    font-size: 6px;
+    margin-top: 2px;
+}
+
+.card-number {
+    text-align: right;
+    font-size: 8px;
+    opacity: 0.8;
+    line-height: 1.2;
+}
+
+/* Print styles */
+@media print {
+    .card-footer, .navbar, .btn {
+        display: none !important;
+    }
+    
+    .id-card {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    .id-card, .id-card * {
+        visibility: visible;
+    }
+    
+    .id-card {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Back side (if needed for printing) */
+.id-card-back {
+    display: none;
+    padding: 20px;
+    font-size: 12px;
+    color: #333;
+    background: #f8f9fa;
+    height: 100%;
+}
+
+.terms-section h5 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+.terms-section ul {
+    font-size: 10px;
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+.terms-section li {
+    margin-bottom: 3px;
+}
+
+.emergency-info {
+    background: #e9ecef;
+    padding: 8px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.emergency-info h6 {
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.emergency-info p {
+    font-size: 10px;
+    margin: 2px 0;
+}
+
+.signature-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+.signature-line {
+    text-align: center;
+    width: 45%;
+}
+
+.signature-line .line {
+    border-bottom: 1px solid #333;
+    margin-bottom: 5px;
+    height: 20px;
+}
+
+.signature-line small {
+    font-size: 8px;
+    color: #666;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printCard() {
+    window.print();
+}
+
+function downloadCard() {
+    // You can implement HTML to image conversion here
+    // For now, just trigger print
+    alert('Download functionality would be implemented with HTML to image conversion library');
+}
+
+// Generate QR Code (if you want to implement it)
+document.addEventListener('DOMContentLoaded', function() {
+    // QR code generation would go here using a library like qrcode.js
+});
+</script>
+{% endblock %}
+
+
+

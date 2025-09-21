@@ -1,0 +1,41 @@
+<!-- templates/announcements/delete.html -->
+{% extends 'base.html' %}
+
+{% block title %}Delete Announcement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Announcement</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <p>Are you sure you want to delete this announcement?</p>
+                
+                <div class="bg-light p-3 rounded mb-3">
+                    <h5>{{ announcement.title }}</h5>
+                    <p class="text-muted mb-0">{{ announcement.content|truncatewords:30 }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Yes, Delete
+                        </button>
+                        <a href="{% url 'announcements:detail' pk=announcement.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

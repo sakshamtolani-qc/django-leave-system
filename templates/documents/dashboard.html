@@ -1,0 +1,225 @@
+<!-- templates/documents/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Document Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-file-alt me-2"></i>Document Management</h2>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-plus me-2"></i>Generate Document
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="showEmployeeSelector('id_card')">
+                <i class="fas fa-id-card me-2"></i>ID Card
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="showEmployeeSelector('offer_letter')">
+                <i class="fas fa-file-contract me-2"></i>Offer Letter
+            </a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card primary">
+            <div class="card-body text-center">
+                <i class="fas fa-id-card fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ id_cards_count }}</h3>
+                <p class="mb-0">ID Cards Generated</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-file-contract fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ offer_letters_count }}</h3>
+                <p class="mb-0">Offer Letters</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card warning">
+            <div class="card-body text-center">
+                <i class="fas fa-envelope fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ sent_letters_count }}</h3>
+                <p class="mb-0">Letters Sent</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card info">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ this_month_count }}</h3>
+                <p class="mb-0">This Month</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent ID Cards -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Recent ID Cards</h5>
+            </div>
+            <div class="card-body">
+                {% for id_card in recent_id_cards %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1">{{ id_card.employee.get_full_name }}</h6>
+                        <small class="text-muted">{{ id_card.card_number }}</small>
+                        <br>
+                        <small class="text-muted">Generated {{ id_card.generated_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-{% if id_card.is_active %}success{% else %}secondary{% endif %} mb-2 d-block">
+                            {% if id_card.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'documents:id_card_view' employee_id=id_card.employee.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if not id_card.is_active %}
+                            <a href="{% url 'documents:generate_id_card' employee_id=id_card.employee.id %}" class="btn btn-outline-success" title="Regenerate">
+                                <i class="fas fa-redo"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fas fa-id-card fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No ID cards generated yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Offer Letters -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Recent Offer Letters</h5>
+            </div>
+            <div class="card-body">
+                {% for offer_letter in recent_offer_letters %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1">{{ offer_letter.employee.get_full_name }}</h6>
+                        <small class="text-muted">{{ offer_letter.position }}</small>
+                        <br>
+                        <small class="text-muted">Generated {{ offer_letter.generated_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-{% if offer_letter.is_sent %}success{% else %}warning text-dark{% endif %} mb-2 d-block">
+                            {% if offer_letter.is_sent %}Sent{% else %}Draft{% endif %}
+                        </span>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'documents:offer_letter_detail' pk=offer_letter.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'documents:download_offer_letter' pk=offer_letter.pk %}" class="btn btn-outline-success">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fas fa-file-contract fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No offer letters generated yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Selector Modal -->
+<div class="modal fade" id="employeeSelectorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="employeeSearch" placeholder="Search employees...">
+                </div>
+                <div id="employeeList" class="list-group" style="max-height: 300px; overflow-y: auto;">
+                    {% for employee in all_employees %}
+                    <button type="button" class="list-group-item list-group-item-action employee-item" data-employee-id="{{ employee.id }}">
+                        <div class="d-flex align-items-center">
+                            {% if employee.get_profile_picture_url %}
+                            <img src="{{ employee.get_profile_picture_url }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ employee.get_full_name|default:employee.username }}</div>
+                                <small class="text-muted">{{ employee.department|default:'No Department' }} • {{ employee.get_role_display }}</small>
+                            </div>
+                        </div>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentDocumentType = '';
+
+function showEmployeeSelector(documentType) {
+    currentDocumentType = documentType;
+    const modal = new bootstrap.Modal(document.getElementById('employeeSelectorModal'));
+    const title = documentType === 'id_card' ? 'Generate ID Card for Employee' : 'Generate Offer Letter for Employee';
+    document.querySelector('.modal-title').textContent = title;
+    modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Employee search functionality
+    const searchInput = document.getElementById('employeeSearch');
+    const employeeItems = document.querySelectorAll('.employee-item');
+    
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        
+        employeeItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Employee selection
+    employeeItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-employee-id');
+            
+            if (currentDocumentType === 'id_card') {
+                window.location.href = `{% url 'documents:generate_id_card' employee_id=0 %}`.replace('0', employeeId);
+            } else if (currentDocumentType === 'offer_letter') {
+                window.location.href = `{% url 'documents:create_offer_letter' employee_id=0 %}`.replace('0', employeeId);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

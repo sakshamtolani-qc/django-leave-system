@@ -1,0 +1,85 @@
+<!-- templates/performance/bulk_create.html -->
+{% extends 'base.html' %}
+
+{% block title %}Bulk Performance Review Creation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-users me-2"></i>Bulk Performance Review Creation</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    This will create review templates for selected employees. You can edit individual reviews later.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="review_type" class="form-label">Review Type</label>
+                            <select class="form-select" name="review_type" required>
+                                <option value="quarterly">Quarterly Review</option>
+                                <option value="annual">Annual Review</option>
+                                <option value="mid_year">Mid-Year Review</option>
+                                <option value="probation">Probation Review</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="review_period_start" class="form-label">Period Start</label>
+                            <input type="date" class="form-control" name="review_period_start" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="review_period_end" class="form-label">Period End</label>
+                            <input type="date" class="form-control" name="review_period_end" required>
+                        </div>
+                    </div>
+                    
+                    <h6>Select Employees:</h6>
+                    <div class="row">
+                        {% for employee in employees %}
+                        <div class="col-md-6 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="employees" value="{{ employee.id }}" id="emp{{ employee.id }}">
+                                <label class="form-check-label" for="emp{{ employee.id }}">
+                                    {{ employee.get_full_name|default:employee.username }}
+                                    <small class="text-muted">- {{ employee.department|default:'No Department' }}</small>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="selectAll()">Select All</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectNone()">Select None</button>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Create Reviews
+                        </button>
+                        <a href="{% url 'performance:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectAll() {
+    document.querySelectorAll('input[name="employees"]').forEach(cb => cb.checked = true);
+}
+
+function selectNone() {
+    document.querySelectorAll('input[name="employees"]').forEach(cb => cb.checked = false);
+}
+</script>
+{% endblock %}

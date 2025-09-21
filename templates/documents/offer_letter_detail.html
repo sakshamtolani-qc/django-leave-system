@@ -1,0 +1,221 @@
+<!-- templates/documents/offer_letter_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Offer Letter - {{ offer_letter.employee.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Offer Letter</h5>
+                    <div>
+                        <span class="badge bg-{% if offer_letter.is_sent %}success{% else %}warning text-dark{% endif %}">
+                            {% if offer_letter.is_sent %}Sent{% else %}Draft{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Offer Letter Preview -->
+                <div class="offer-letter-content bg-white p-4 border rounded">
+                    <!-- Company Letterhead -->
+                    <div class="text-center mb-4">
+                        <img src="https://res.cloudinary.com/sakshamtolani/image/upload/v1757790613/QC_Logo_g59zns.jpg" 
+                             alt="{{ company_name }}" style="height: 60px; margin-bottom: 15px;">
+                        <h2 class="text-primary">{{ company_name }}</h2>
+                        <hr class="w-25 mx-auto">
+                        <h3 class="text-secondary">OFFER LETTER</h3>
+                    </div>
+                    
+                    <!-- Letter Content -->
+                    <div class="letter-body" style="line-height: 1.8;">
+                        {{ offer_letter.letter_content|linebreaks }}
+                    </div>
+                    
+                    <!-- Signatures Section -->
+                    <div class="signatures-section mt-5">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="signature-block">
+                                    <div class="signature-line mb-2" style="border-bottom: 1px solid #000; width: 200px; height: 40px;"></div>
+                                    <strong>HR Department</strong><br>
+                                    <small>{{ company_name }}</small><br>
+                                    <small>Date: {{ offer_letter.generated_at|date:"F d, Y" }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="signature-block">
+                                    <div class="signature-line mb-2" style="border-bottom: 1px solid #000; width: 200px; height: 40px;"></div>
+                                    <strong>{{ offer_letter.employee.get_full_name }}</strong><br>
+                                    <small>Employee Signature</small><br>
+                                    <small>Date: ________________</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'dashboard:user_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{% url 'documents:download_offer_letter' pk=offer_letter.pk %}" class="btn btn-success me-2">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        {% if not offer_letter.is_sent %}
+                        <button class="btn btn-primary" onclick="sendOfferLetter()">
+                            <i class="fas fa-envelope me-2"></i>Send to Employee
+                        </button>
+                        {% endif %}
+                        {% if user.role in 'hr,admin' or user.is_superuser %}
+                        <a href="{% url 'documents:edit_offer_letter' pk=offer_letter.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Edit
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Offer Details Summary -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Offer Details</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Employee:</strong><br>
+                        {{ offer_letter.employee.get_full_name }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Position:</strong><br>
+                        {{ offer_letter.position }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Department:</strong><br>
+                        {{ offer_letter.department }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Annual Salary:</strong><br>
+                        ${{ offer_letter.salary|floatformat:2 }}
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <strong>Joining Date:</strong><br>
+                        {{ offer_letter.joining_date|date:"F d, Y" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Generated By:</strong><br>
+                        {{ offer_letter.generated_by.get_full_name }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Generated On:</strong><br>
+                        {{ offer_letter.generated_at|date:"F d, Y" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Status:</strong><br>
+                        {% if offer_letter.is_sent %}
+                        <span class="badge bg-success">Sent on {{ offer_letter.sent_at|date:"M d, Y" }}</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Draft</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.offer-letter-content {
+    font-family: 'Times New Roman', serif;
+    background: white !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.letter-body {
+    text-align: justify;
+    font-size: 14px;
+    color: #333;
+}
+
+.signature-block {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.signature-line {
+    margin: 0 auto;
+}
+
+/* Print styles */
+@media print {
+    .card-footer, .navbar, .btn, .card:last-child {
+        display: none !important;
+    }
+    
+    .offer-letter-content {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 20px !important;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    .offer-letter-content, .offer-letter-content * {
+        visibility: visible;
+    }
+    
+    .offer-letter-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendOfferLetter() {
+    if (confirm('Are you sure you want to send this offer letter to the employee?')) {
+        // AJAX call to mark as sent and send email
+        fetch('{% url "documents:send_offer_letter" pk=offer_letter.pk %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Offer letter sent successfully!');
+                location.reload();
+            } else {
+                alert('Failed to send offer letter: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+</script>
+{% endblock %}

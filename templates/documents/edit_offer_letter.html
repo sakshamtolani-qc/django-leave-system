@@ -1,0 +1,38 @@
+<!-- templates/documents/edit_offer_letter.html -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Offer Letter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Offer Letter</h4>
+                <p class="mb-0 text-muted">Employee: {{ employee.get_full_name }}</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Note:</strong> Editing will regenerate the letter content. Any custom modifications will be lost.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Offer Letter
+                        </button>
+                        <a href="{% url 'documents:offer_letter_detail' pk=offer_letter.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+<!-- templates/announcements/detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ announcement.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if announcement.is_pinned %}
+                        <i class="fas fa-thumbtack text-warning me-2"></i>
+                        {% endif %}
+                        <h4 class="mb-0">{{ announcement.title }}</h4>
+                    </div>
+                    <div>
+                        <span class="badge bg-{{ announcement.category|default:'secondary' }} me-2">
+                            {{ announcement.get_category_display }}
+                        </span>
+                        <span class="badge bg-{% if announcement.priority == 'urgent' %}danger{% elif announcement.priority == 'high' %}warning text-dark{% elif announcement.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                            {{ announcement.get_priority_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-user me-1"></i>{{ announcement.author.get_full_name|default:announcement.author.username }}
+                        <i class="fas fa-calendar ms-3 me-1"></i>{{ announcement.created_at|date:"F d, Y \a\t g:i A" }}
+                        {% if announcement.expires_at %}
+                        <i class="fas fa-clock ms-3 me-1"></i>Expires {{ announcement.expires_at|date:"F d, Y" }}
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <div class="announcement-content">
+                    {{ announcement.content|linebreaks }}
+                </div>
+                
+                {% if announcement.attachment %}
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6><i class="fas fa-paperclip me-2"></i>Attachment</h6>
+                    <a href="{{ announcement.attachment.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if announcement.target_departments.exists or announcement.target_roles %}
+                <div class="mt-4 p-3 bg-info bg-opacity-10 rounded">
+                    <h6><i class="fas fa-users me-2"></i>Targeted To:</h6>
+                    {% if announcement.target_departments.exists %}
+                    <div class="mb-2">
+                        <strong>Departments:</strong>
+                        {% for dept in announcement.target_departments.all %}
+                        <span class="badge bg-info me-1">{{ dept.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if announcement.target_roles %}
+                    <div>
+                        <strong>Roles:</strong>
+                        {% for role in announcement.target_roles.split:',' %}
+                        <span class="badge bg-secondary me-1">{{ role|title }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'announcements:list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Announcements
+                </a>
+                {% if user.role in 'hr,admin' or user.is_superuser %}
+                <a href="#" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-edit me-2"></i>Edit
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.announcement-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.announcement-content p {
+    margin-bottom: 1.2rem;
+}
+</style>
+{% endblock %}

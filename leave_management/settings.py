@@ -37,6 +37,11 @@ INSTALLED_APPS = [
     "accounts",
     "leaves",
     "dashboard",
+    "employees",
+    "performance",
+    "announcements", 
+    "helpdesk",
+    "documents",
 ]
 
 MIDDLEWARE = [

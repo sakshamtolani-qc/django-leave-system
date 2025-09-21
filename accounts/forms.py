@@ -9,6 +9,49 @@ import string
 
 User = get_user_model()
 
+
+class BasicProfileUpdateForm(forms.ModelForm):
+    """Form for updating basic user information (User model)"""
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone', 'profile_picture']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_picture': forms.FileInput(attrs={'class': 'form-control'})
+        }
+
+    def clean_profile_picture(self):
+        picture = self.cleaned_data.get('profile_picture')
+        if picture:
+            # Validate file size (max 5MB)
+            if picture.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("Image file too large ( > 5MB )")
+            # Validate file type
+            if not picture.content_type.startswith('image/'):
+                raise forms.ValidationError("Please upload a valid image file.")
+        return picture
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('first_name', css_class='form-group col-md-6 mb-0'),
+                Column('last_name', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('email', css_class='form-group col-md-6 mb-0'),
+                Column('phone', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            'profile_picture',
+            Submit('submit', 'Update Basic Info', css_class='btn btn-primary')
+        )
+        
 class AddUserForm(UserCreationForm):
     """Form for HR/Admin to create new employee accounts"""
     email = forms.EmailField(required=True, help_text="Employee's work email address")

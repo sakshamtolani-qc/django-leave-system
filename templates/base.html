@@ -255,6 +255,46 @@
                             {% endif %}
                         </div>
                         
+                        <!-- Employee Management Section -->
+                        <div class="nav-section">
+                            <div class="nav-section-title">Employee Hub</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'employees' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'employees:directory' %}">
+                                    <i class="fas fa-address-book me-2"></i>Directory
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'performance' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'performance:dashboard' %}">
+                                    <i class="fas fa-chart-line me-2"></i>Performance
+                                </a>
+                            </li>
+                        </div>
+                        
+                        <!-- Communication Section -->
+                        <div class="nav-section">
+                            <div class="nav-section-title">Communication</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'announcements' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'announcements:list' %}">
+                                    <i class="fas fa-bullhorn me-2"></i>Announcements
+                                </a>
+                            </li>
+                        </div>
+                        
+                        <!-- Support Section -->
+                        <div class="nav-section">
+                            <div class="nav-section-title">IT Support</div>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'helpdesk' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'helpdesk:ticket_list' %}">
+                                    <i class="fas fa-headset me-2"></i>My Tickets
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link" href="{% url 'helpdesk:create_ticket' %}">
+                                    <i class="fas fa-plus-circle me-2"></i>New Ticket
+                                </a>
+                            </li>
+                        </div>
+                        
                         <!-- HR & Admin Section -->
                         {% if user.role == 'hr' or user.role == 'admin' or user.is_superuser %}
                         <div class="nav-section">
@@ -267,6 +307,11 @@
                             <li class="nav-item mb-2">
                                 <a class="nav-link {% if 'user_list' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'dashboard:user_list' %}">
                                     <i class="fas fa-users me-2"></i>Manage Users
+                                </a>
+                            </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link {% if 'documents' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'documents:dashboard' %}">
+                                    <i class="fas fa-file-alt me-2"></i>Documents
                                 </a>
                             </li>
                             <li class="nav-item mb-2">
@@ -302,11 +347,6 @@
                             <li class="nav-item mb-2">
                                 <a class="nav-link coming-soon" href="#" onclick="return false;">
                                     <i class="fas fa-graduation-cap me-2"></i>Training <small>(Coming Soon)</small>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-2">
-                                <a class="nav-link coming-soon" href="#" onclick="return false;">
-                                    <i class="fas fa-file-invoice me-2"></i>Expenses <small>(Coming Soon)</small>
                                 </a>
                             </li>
                         </div>

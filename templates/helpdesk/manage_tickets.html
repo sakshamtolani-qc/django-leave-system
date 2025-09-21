@@ -1,0 +1,320 @@
+<!-- templates/helpdesk/manage_tickets.html -->
+{% extends 'base.html' %}
+
+{% block title %}IT Ticket Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>IT Ticket Management</h2>
+    <div class="d-flex gap-2">
+        <span class="badge bg-warning text-dark">{{ tickets|length }} tickets</span>
+        <a href="{% url 'helpdesk:create_ticket' %}" class="btn btn-outline-success btn-sm">
+            <i class="fas fa-plus me-2"></i>New Ticket
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" name="status" id="status">
+                    <option value="">All Statuses</option>
+                    {% for value, display in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="priority" class="form-label">Priority</label>
+                <select class="form-select" name="priority" id="priority">
+                    <option value="">All Priorities</option>
+                    {% for value, display in priority_choices %}
+                    <option value="{{ value }}" {% if priority_filter == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="assigned" class="form-label">Assigned To</label>
+                <select class="form-select" name="assigned" id="assigned">
+                    <option value="">All Assignments</option>
+                    <option value="unassigned" {% if assigned_filter == 'unassigned' %}selected{% endif %}>Unassigned</option>
+                    {% for staff in it_staff %}
+                    <option value="{{ staff.id }}" {% if assigned_filter == staff.id|stringformat:"s" %}selected{% endif %}>{{ staff.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Filter</button>
+                <a href="{% url 'helpdesk:manage_tickets' %}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets List -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group btn-group-sm" role="group">
+            <input type="radio" class="btn-check" name="view_mode" id="card_view" checked>
+            <label class="btn btn-outline-primary" for="card_view">
+                <i class="fas fa-th-large"></i> Cards
+            </label>
+            
+            <input type="radio" class="btn-check" name="view_mode" id="table_view">
+            <label class="btn btn-outline-primary" for="table_view">
+                <i class="fas fa-list"></i> Table
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Card View -->
+<div id="tickets_cards">
+    {% for ticket in tickets %}
+    <div class="card mb-3 ticket-card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-2">
+                        <h6 class="card-title mb-0">
+                            <a href="{% url 'helpdesk:ticket_detail' pk=ticket.pk %}" class="text-decoration-none">
+                                {{ ticket.title }}
+                            </a>
+                        </h6>
+                        <span class="badge bg-{% if ticket.status == 'open' %}warning text-dark{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% elif ticket.status == 'closed' %}secondary{% else %}primary{% endif %} ms-2">
+                            {{ ticket.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge bg-secondary">{{ ticket.get_category_display }}</span>
+                        <span class="badge bg-{% if ticket.priority == 'critical' %}danger{% elif ticket.priority == 'high' %}warning text-dark{% elif ticket.priority == 'medium' %}info{% else %}light text-dark{% endif %}">
+                            {{ ticket.get_priority_display }}
+                        </span>
+                        <small class="text-muted">{{ ticket.ticket_id }}</small>
+                    </div>
+                    
+                    <p class="card-text text-muted mb-2">{{ ticket.description|truncatewords:15 }}</p>
+                    
+                    <div class="row small text-muted">
+                        <div class="col-md-6">
+                            <i class="fas fa-user me-1"></i>{{ ticket.requester.get_full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <i class="fas fa-calendar me-1"></i>{{ ticket.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-end">
+                    <div class="mb-2">
+                        {% if ticket.assigned_to %}
+                        <small class="text-success">
+                            <i class="fas fa-user-check me-1"></i>{{ ticket.assigned_to.get_full_name }}
+                        </small>
+                        {% else %}
+                        <small class="text-warning">
+                            <i class="fas fa-user-clock me-1"></i>Unassigned
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'helpdesk:ticket_detail' pk=ticket.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        
+                        <!-- Quick Assign Dropdown -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><h6 class="dropdown-header">Assign to:</h6></li>
+                                {% for staff in it_staff %}
+                                <li><a class="dropdown-item" href="#" onclick="quickAssign({{ ticket.pk }}, {{ staff.id }})">
+                                    {{ staff.get_full_name }}
+                                </a></li>
+                                {% endfor %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-warning" href="#" onclick="quickAssign({{ ticket.pk }}, '')">
+                                    <i class="fas fa-user-times me-2"></i>Unassign
+                                </a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Quick Status Change -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><h6 class="dropdown-header">Change Status:</h6></li>
+                                {% for value, display in status_choices %}
+                                <li><a class="dropdown-item {% if ticket.status == value %}active{% endif %}" 
+                                       href="#" onclick="quickStatusUpdate({{ ticket.pk }}, '{{ value }}')">
+                                    {{ display }}
+                                </a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        {% if ticket.attachment %}
+                        <a href="{{ ticket.attachment.url }}" class="btn btn-outline-secondary btn-sm" target="_blank" title="Download attachment">
+                            <i class="fas fa-paperclip"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            {% if ticket.status == 'resolved' %}
+                            <i class="fas fa-check-circle text-success me-1"></i>Resolved {{ ticket.resolved_at|date:"M d" }}
+                            {% elif ticket.status == 'in_progress' %}
+                            <i class="fas fa-spinner text-info me-1"></i>In Progress
+                            {% elif ticket.status == 'pending' %}
+                            <i class="fas fa-clock text-warning me-1"></i>Pending Response
+                            {% else %}
+                            <i class="fas fa-hourglass-half text-muted me-1"></i>Open
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-headset fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">No tickets match your filters</h4>
+        <p class="text-muted">Adjust your filters or check back later</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Table View (Hidden by default) -->
+<div id="tickets_table" style="display: none;">
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Requester</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Assigned To</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ ticket.ticket_id }}</strong><br>
+                                    <small class="text-muted">{{ ticket.title|truncatechars:40 }}</small>
+                                </div>
+                            </td>
+                            <td>{{ ticket.requester.get_full_name }}</td>
+                            <td>
+                                <span class="badge bg-{% if ticket.status == 'open' %}warning text-dark{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if ticket.priority == 'critical' %}danger{% elif ticket.priority == 'high' %}warning text-dark{% elif ticket.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                                    {{ ticket.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.assigned_to.get_full_name|default:"Unassigned" }}</td>
+                            <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'helpdesk:ticket_detail' pk=ticket.pk %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// View mode toggle
+document.getElementById('card_view').addEventListener('change', function() {
+    if (this.checked) {
+        document.getElementById('tickets_cards').style.display = 'block';
+        document.getElementById('tickets_table').style.display = 'none';
+    }
+});
+
+document.getElementById('table_view').addEventListener('change', function() {
+    if (this.checked) {
+        document.getElementById('tickets_cards').style.display = 'none';
+        document.getElementById('tickets_table').style.display = 'block';
+    }
+});
+
+// Quick assign function
+function quickAssign(ticketId, assignedToId) {
+    fetch(`/helpdesk/assign/${ticketId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        credentials: 'same-origin',
+        body: `assigned_to=${assignedToId}`
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to assign ticket');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+
+// Quick status update
+function quickStatusUpdate(ticketId, status) {
+    fetch(`/helpdesk/ticket/${ticketId}/update-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        credentials: 'same-origin',
+        body: `status=${status}`
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to update ticket status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+</script>
+
+<!-- Hidden CSRF token for AJAX requests -->
+{% csrf_token %}
+{% endblock %}

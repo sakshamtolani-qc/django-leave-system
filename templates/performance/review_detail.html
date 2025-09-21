@@ -1,0 +1,234 @@
+<!-- templates/performance/review_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Performance Review - {{ review.employee.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>{{ review.get_review_type_display }}
+                    </h5>
+                    <div class="d-flex align-items-center">
+                        <div class="rating-stars me-3">
+                            {% for i in "12345" %}
+                            <i class="fas fa-star {% if review.overall_rating >= forloop.counter %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="badge bg-{% if review.overall_rating >= 4 %}success{% elif review.overall_rating >= 3 %}warning text-dark{% else %}danger{% endif %} fs-6">
+                            {{ review.overall_rating|floatformat:1 }}/5.0
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Employee Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Employee</h6>
+                        <p>{{ review.employee.get_full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Review Period</h6>
+                        <p>{{ review.review_period_start|date:"M d, Y" }} - {{ review.review_period_end|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                
+                <!-- Performance Ratings -->
+                <div class="mb-4">
+                    <h6>Performance Ratings</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="rating-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Technical Skills</span>
+                                    <span class="fw-bold">{{ review.technical_skills }}/5</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: {% widthratio review.technical_skills 5 100 %}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="rating-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Communication</span>
+                                    <span class="fw-bold">{{ review.communication }}/5</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: {% widthratio review.communication 5 100 %}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="rating-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Teamwork</span>
+                                    <span class="fw-bold">{{ review.teamwork }}/5</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-info" style="width: {% widthratio review.teamwork 5 100 %}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="rating-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Leadership</span>
+                                    <span class="fw-bold">{{ review.leadership }}/5</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-warning" style="width: {% widthratio review.leadership 5 100 %}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="rating-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span>Productivity</span>
+                                    <span class="fw-bold">{{ review.productivity }}/5</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-danger" style="width: {% widthratio review.productivity 5 100 %}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Review Content -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-4">
+                            <h6><i class="fas fa-trophy me-2"></i>Key Achievements</h6>
+                            <div class="achievement-box p-3 bg-light rounded">
+                                {{ review.achievements|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6><i class="fas fa-arrow-up me-2"></i>Areas for Improvement</h6>
+                            <div class="improvement-box p-3 bg-light rounded">
+                                {{ review.areas_for_improvement|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6><i class="fas fa-bullseye me-2"></i>Goals for Next Period</h6>
+                            <div class="goals-box p-3 bg-light rounded">
+                                {{ review.goals_for_next_period|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        {% if review.reviewer_comments %}
+                        <div class="mb-4">
+                            <h6><i class="fas fa-comment me-2"></i>Reviewer Comments</h6>
+                            <div class="comment-box p-3 bg-primary bg-opacity-10 rounded">
+                                {{ review.reviewer_comments|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if review.employee_comments %}
+                        <div class="mb-4">
+                            <h6><i class="fas fa-reply me-2"></i>Employee Response</h6>
+                            <div class="comment-box p-3 bg-success bg-opacity-10 rounded">
+                                {{ review.employee_comments|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'performance:dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                {% if can_edit %}
+                <a href="{% url 'performance:edit_review' pk=review.pk %}" class="btn btn-primary ms-2">
+                    <i class="fas fa-edit me-2"></i>Edit Review
+                </a>
+                {% endif %}
+                {% if user == review.employee and not review.employee_comments %}
+                <a href="{% url 'performance:add_employee_comment' pk=review.pk %}" class="btn btn-success ms-2">
+                    <i class="fas fa-comment me-2"></i>Add Response
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Review Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Reviewer:</strong><br>
+                    {{ review.reviewer.get_full_name }}
+                </div>
+                <div class="mb-3">
+                    <strong>Review Date:</strong><br>
+                    {{ review.created_at|date:"F d, Y" }}
+                </div>
+                <div class="mb-3">
+                    <strong>Status:</strong><br>
+                    <span class="badge bg-{% if review.is_finalized %}success{% else %}warning text-dark{% endif %}">
+                        {% if review.is_finalized %}Finalized{% else %}Draft{% endif %}
+                    </span>
+                </div>
+                {% if review.updated_at != review.created_at %}
+                <div class="mb-3">
+                    <strong>Last Updated:</strong><br>
+                    {{ review.updated_at|date:"F d, Y g:i A" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Performance Trend (if multiple reviews exist) -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Performance Trend</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.rating-stars i {
+    font-size: 1.2rem;
+}
+
+.rating-item {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border-left: 3px solid #6c757d;
+}
+
+.achievement-box {
+    border-left: 4px solid #28a745;
+}
+
+.improvement-box {
+    border-left: 4px solid #ffc107;
+}
+
+.goals-box {
+    border-left: 4px solid #0d6efd;
+}
+
+.comment-box {
+    border-left: 4px solid #6f42c1;
+}
+</style>
+{% endblock %}
